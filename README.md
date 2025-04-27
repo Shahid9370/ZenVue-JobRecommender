@@ -75,13 +75,13 @@ Visit `http://localhost:3000` in your browser to explore the app.
 
 ---
 
-## Screenshots & Demo
+## Screenshots and Videos
 
 - **Screenshot:** ![Job Recommendations Interface]![image](https://github.com/user-attachments/assets/a099d22a-f524-4065-a0d3-302195b170af)
   
   _A glimpse of the job recommendation interface._
 
-- **Video:** (#)  
+- **Video:**
   _Explore the app from start to finish with this demo video._
 
 
