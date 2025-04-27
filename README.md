@@ -25,6 +25,12 @@ Our mission is to streamline the job search process and connect candidates with 
 - **Future Enhancements:** Integration of **Applicant Tracking System (ATS)** for better job matching and resume parsing.
 
 ---
+## Frontend Live Demo
+You can check out the live demo of the frontend UI here:
+_Live Demo_ - 
+
+**Please note that this demo will not show job recommendations or resume parsing functionality as it only includes the UI. To access the full platform with backend features, you need to clone the project and follow the installation steps below.**
+---
 
 ## Getting Started
 
