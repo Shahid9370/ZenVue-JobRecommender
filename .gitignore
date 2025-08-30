@@ -1,0 +1,16 @@
+# Ignore auto commit script
+auto_commit.py
+
+# Ignore Python cache
+__pycache__/
+
+# Ignore node_modules (client + server dono ke)
+job-recommendation-client/node_modules/
+job-recommendation-server/node_modules/
+
+# Ignore logs
+*.log
+
+# Ignore system files
+.DS_Store
+Thumbs.db
