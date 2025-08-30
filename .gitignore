@@ -1,16 +1,24 @@
-# Ignore auto commit script
-auto_commit.py
-
-# Ignore Python cache
-__pycache__/
-
-# Ignore node_modules (client + server dono ke)
+# Node dependencies
 job-recommendation-client/node_modules/
-job-recommendation-server/node_modules/
 
-# Ignore logs
-*.log
+# Python cache
+job-recommendation-server/__pycache__/
+*.pyc
 
-# Ignore system files
+# Virtual environments
+venv/
+env/
+
+# Environment files
+.env
+*.env
+
+# System files
 .DS_Store
 Thumbs.db
+
+# Logs
+*.log
+
+# Personal automation scripts
+auto_commit.py
