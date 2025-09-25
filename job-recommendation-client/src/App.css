@@ -734,7 +734,17 @@ section {
   }
 }
 
-
+/* Responsive Adjustments for Hero/Landing Page Look */
+@media (max-width: 500px) {
+  #howitworks .gradient-headline.text-3xl.sm\:text-4xl.font-semibold.text-center.mb-12.animate-fade-in-up {
+    font-size: 1.45rem;
+    margin-bottom: 2.4rem;
+  }
+  #howitworks .flex.flex-col.items-center.text-center.max-w-xs {
+    padding: 1.4rem 1rem;
+    max-width: 94vw;
+  }
+}
 
 /* 8. Testimonials Section (#testimonials) */
 #testimonials.py-16.px-6.sm\:px-8.md\:px-16.bg-light.animate-fade-in {
