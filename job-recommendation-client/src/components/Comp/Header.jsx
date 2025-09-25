@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import 'job-recommendation-client/src/css/Header.css';
+
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -14,7 +14,7 @@ const Header = () => {
     <header className="header">
       <div className="header-content">
         <div className="header-text">
-          <h1>ZenVue</h1>
+          <h1 href="./" >ZenVue</h1>
           <p className="tagline">Discover jobs tailored to your skills</p>
         </div>
         <nav className="header-nav desktop-nav">

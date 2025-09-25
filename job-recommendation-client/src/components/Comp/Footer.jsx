@@ -1,5 +1,4 @@
 import React from 'react';
-import 'job-recommendation-client/src/css/Footer.css';
 
 const Footer = () => {
   const footerLinks = [

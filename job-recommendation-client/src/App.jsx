@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import LandingPage from './components/LandingPage';
 import ProfileForm from './components/ProfileForm';
 import JobCard from './components/JobCard';
 import Header from './components/Comp/Header';
 import Footer from './components/Comp/Footer';
 import './App.css';
 
-const App = () => {
+const JobRecommendationPage = () => {
   const [recommendedJobs, setRecommendedJobs] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -13,14 +15,17 @@ const App = () => {
   const handleRecommendationsFetched = (jobs) => {
     setLoading(true);
     setError(null);
-    setRecommendedJobs(jobs || []);
-    setLoading(false);
+
+    // simulate async
+    setTimeout(() => {
+      setRecommendedJobs(jobs || []);
+      setLoading(false);
+    }, 500);
   };
 
   return (
     <div className="app-container">
       <Header />
-
       <ProfileForm onRecommendationsFetched={handleRecommendationsFetched} />
 
       {loading && <p className="loading">⏳ Loading recommendations...</p>}
@@ -40,5 +45,14 @@ const App = () => {
     </div>
   );
 };
+
+const App = () => (
+  <Router>
+    <Routes>
+      <Route path="/" element={<LandingPage />} />
+      <Route path="/app" element={<JobRecommendationPage />} />
+    </Routes>
+  </Router>
+);
 
 export default App;
