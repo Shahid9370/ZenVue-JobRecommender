@@ -86,7 +86,7 @@ const ProfileForm = ({ onRecommendationsFetched }) => {
   return (
     <div className="form-wrapper">
       <form onSubmit={handleSubmit} className="form-card">
-        <h2 className="form-title">Job Search Form</h2>
+        <h2 className="form-title">Get AI-powered Job Matches</h2>
 
         {message && (
           <div className={`message ${messageType}`} role="alert">
@@ -217,7 +217,7 @@ const ProfileForm = ({ onRecommendationsFetched }) => {
                 <circle cx="11" cy="11" r="8" />
                 <path d="m21 21-4.35-4.35" />
               </svg>
-              Get Recommendations
+              Find My Jobs
             </>
           )}
         </button>
