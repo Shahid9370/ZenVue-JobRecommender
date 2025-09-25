@@ -5,6 +5,7 @@ job-recommendation-client/node_modules/
 job-recommendation-server/__pycache__/
 *.pyc
 
+job-recommendation-server/node_modules/
 # Virtual environments
 venv/
 env/
