@@ -15,13 +15,6 @@
   --border-radius: 0.75rem;
 }
 
-/* Reset default margins and ensure box-sizing */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
 /* Form wrapper for centering */
 .form-wrapper {
   display: flex;
