@@ -26,7 +26,13 @@ const upload = multer({ storage });
 app.use('/api', jobRoutes);
 app.use('/api/recommend', upload.any(), recommendRoutes);
 
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+// Export app for testing
+module.exports = app;
+
+// Start server only if run directly
+if (require.main === module) {
+  const PORT = process.env.PORT || 5000;
+  app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+  });
+}
