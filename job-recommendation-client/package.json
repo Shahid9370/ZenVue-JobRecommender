@@ -8,6 +8,7 @@
     "@testing-library/react": "^16.3.0",
     "@testing-library/user-event": "^13.5.0",
     "axios": "^1.8.4",
+    "dropzone": "^6.0.0-beta.2",
     "framer-motion": "^12.7.4",
     "job-recommendation-client": "file:",
     "react": "^19.1.0",

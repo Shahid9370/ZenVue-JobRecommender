@@ -16,10 +16,10 @@ const Header = () => {
       ],
     },
     {
-      name: 'ATS Tools',
+      name: 'Resume Tool',
       href: '#',
       dropdown: [
-        { name: 'Resume Generator', href: '/resume-generator' },
+        { name: ' Resume Tailor', href: '' },
         { name: 'ATS Checker', href: '/ats-checker' },
       ],
     },
