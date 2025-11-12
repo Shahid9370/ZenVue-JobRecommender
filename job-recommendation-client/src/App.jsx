@@ -1,75 +1,50 @@
-import React, { useState } from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import LandingPage from './components/LandingPage';
-import ProfileForm from './components/ProfileForm';
-import JobCard from './components/JobCard';
-import Header from './components/Comp/Header';
-import Footer from './components/Comp/Footer';
+import React from "react";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
-// 👇 Resume Tool import
-//import { ResumeUploader, ResumeParser, ResumeGenerator } from './components/ResumeTool';
+import Navbar from "./components/Navbar";
+import Footer from "./components/Footer";
 
-import './App.css';
+import Home from "./pages/Home";
+import Jobs from "./pages/Jobs";
+import ResumeBuilder from "./pages/ResumeBuilder";
+import About from "./pages/About";
+import Contact from "./pages/Contact";
+import Login from "./pages/Login";
+import Register from "./pages/Register";
 
-const JobRecommendationPage = () => {
-  const [recommendedJobs, setRecommendedJobs] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-
-  const handleRecommendationsFetched = (jobs) => {
-    setLoading(true);
-    setError(null);
-
-    // simulate async
-    setTimeout(() => {
-      setRecommendedJobs(jobs || []);
-      setLoading(false);
-    }, 500);
-  };
-
+/**
+ * App with routing for all pages.
+ * Navbar/Footer remain visible on all routes.
+ */
+export default function App() {
   return (
-    <div className="app-container">
-      <Header />
-      <ProfileForm onRecommendationsFetched={handleRecommendationsFetched} />
+    <BrowserRouter>
+      <div className="min-h-screen flex flex-col bg-gray-50 text-gray-900">
+        <Navbar />
 
-      {loading && <p className="loading">⏳ Loading recommendations...</p>}
-      {error && <p className="error">{error}</p>}
+        <main className="flex-1">
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/jobs" element={<Jobs />} />
+            <Route path="/resume-builder" element={<ResumeBuilder />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/contact" element={<Contact />} />
 
-      {recommendedJobs.length > 0 ? (
-        <div className="jobs-container">
-          {recommendedJobs.map((job, index) => (
-            <JobCard key={index} job={job} />
-          ))}
-        </div>
-      ) : (
-        !loading && !error && <p className="no-jobs">No job recommendations available</p>
-      )}
+            {/* Auth pages */}
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
 
-      <Footer />
-    </div>
+            {/* optional pages (create if needed) */}
+            <Route path="/post-job" element={<div className="p-12 text-center">Post a Job (coming soon)</div>} />
+            <Route path="/companies" element={<div className="p-12 text-center">Companies (coming soon)</div>} />
+
+            {/* fallback */}
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </main>
+
+        <Footer />
+      </div>
+    </BrowserRouter>
   );
-};
-
-const ResumeToolPage = () => (
-  <div className="app-container">
-    <Header />
-    <h1>Resume Tools</h1>
-   // <ResumeUploader />
-    //<ResumeParser />
-   // <ResumeGenerator />
-    <Footer />
-  </div>
-);
-
-const App = () => (
-  <Router>
-    <Routes>
-      <Route path="/" element={<LandingPage />} />
-      <Route path="/app" element={<JobRecommendationPage />} />
-      {/* 👇 New Route for Resume Tool */}
-      <Route path="/resume-tool" element={<ResumeToolPage />} />
-    </Routes>
-  </Router>
-);
-
-export default App;
+}
