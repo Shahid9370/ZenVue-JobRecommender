@@ -86,8 +86,8 @@ export default function HeroSection() {
     const setVars = () => {
       if (!mounted) return;
       const groupWidth = Math.ceil(group.getBoundingClientRect().width);
-      const speed = 100;
-      const durationSec = Math.max(8, Math.round((groupWidth / speed) * 10) / 10);
+      const speed = 50;
+      const durationSec = Math.max(5, Math.round((groupWidth / speed) * 8) / 8);
       track.style.setProperty("--marquee-width", `${groupWidth}px`);
       track.style.setProperty("--marquee-duration", `${durationSec}s`);
     };
