@@ -2,370 +2,138 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Brand variables — tweak to taste */
+/* =========================
+   Design tokens / globals
+   ========================= */
 :root{
   --brand-start: #4f46e5; /* indigo-600 */
   --brand-mid: #7c3aed;   /* violet-500 */
   --brand-end: #06b6d4;   /* teal-400 */
   --glass: rgba(255,255,255,0.6);
   --zen-navbar-height: 35px; /* approximate navbar height (mobile) */
-    --zen-navbar-gap: 10px;
+  --zen-navbar-gap: 10px;
+  --zen-blue: #2563EB;
+  --cta-start: #6366F1;
+  --cta-end: #2563EB;
 }
 body {
-    padding-top: calc(var(--zen-navbar-height) + var(--zen-navbar-gap));
-    /* keep layout stable */
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
+  padding-top: calc(var(--zen-navbar-height) + var(--zen-navbar-gap));
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* =========================
+   Utilities
+   - small helpers kept minimal & tailwind-friendly
+   ========================= */
+.focus-ring:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+button:focus-visible,
+.mobile-search-btn:focus-visible,
+.mobile-search-panel:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 6px rgba(37,99,235,0.08);
+  border-radius: 10px;
+}
+
+/* small interactive press */
+.btn-press {
+  transition: transform .12s ease, box-shadow .12s ease, opacity .12s ease;
+}
+.btn-press:active { transform: translateY(1px) scale(.998); }
+
+/* small card hover used widely */
+.card-hover {
+  transition: transform .18s cubic-bezier(.2,.9,.3,1), box-shadow .18s ease;
+  will-change: transform, box-shadow;
+}
+.card-hover:hover { transform: translateY(-6px); box-shadow: 0 18px 60px rgba(2,6,23,0.07); }
+
+/* Respect reduced motion across utilities */
+@media (prefers-reduced-motion: reduce) {
+  .btn-press,
+  .card-hover,
+  .moving-blob,
+  .moving-gradient-shift,
+  .photo-img,
+  .animate-fade-up,
+  .animate-float {
+    transition: none !important;
+    animation: none !important;
+    transform: none !important;
   }
+}
 
+/* =========================
+   Components
+   - grouped, merged, deduplicated
+   ========================= */
 @layer components {
-  /*
-    Navbar glass + interaction styles.
-    Add this inside your src/index.css @layer components section.
-    These styles focus on smooth transform-only animations, stable layout,
-    accessible focus rings, and a premium glassmorphism look.
-  */
-
-  /* Navbar container: floating glass card */
-   .navbar-glass {
+  /* ---------- Navbar / logo / nav helpers ---------- */
+  .navbar-glass {
     pointer-events: auto;
     display: block;
-    /* subtle glass background */
     background: linear-gradient(180deg, rgba(255,255,255,0.72), rgba(255,255,255,0.60));
     border: 1px solid rgba(15,23,42,0.04);
-
-    /* Safari / WebKit support for backdrop-filter */
     -webkit-backdrop-filter: blur(8px);
     backdrop-filter: blur(8px);
-
-    /* Ensure the semi-transparent background clips correctly */
     -webkit-background-clip: padding-box;
             background-clip: padding-box;
-
     border-radius: 14px;
     box-shadow: 0 8px 30px rgba(2,6,23,0.06);
     transition: background-color .18s ease, box-shadow .22s ease, transform .18s ease;
   }
-
-  /* Hover: brighten background slightly without moving position */
   .navbar-glass:hover {
     background: linear-gradient(180deg, rgba(255,255,255,0.86), rgba(255,255,255,0.7));
     box-shadow: 0 18px 48px rgba(2,6,23,0.08);
   }
 
-  /* Logo micro animation */
   .logo-anim {
     background: linear-gradient(135deg, rgba(99,102,241,1), rgba(37,99,235,1));
     transform-origin: center;
     transition: transform .28s cubic-bezier(.2,.9,.3,1), box-shadow .22s ease;
   }
-  .logo-anim:hover {
-    transform: translateY(-3px) scale(1.02);
-    box-shadow: 0 10px 30px rgba(37,99,235,0.12);
-  }
+  .logo-anim:hover { transform: translateY(-3px) scale(1.02); box-shadow: 0 10px 30px rgba(37,99,235,0.12); }
 
-  /* Nav link underline animation (desktop) */
-  .nav-underline {
-    position: relative;
-    padding-bottom: 0.125rem;
-  }
+  .nav-underline { position: relative; padding-bottom: 0.125rem; }
   .nav-underline::after {
-    content: "";
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: -2px;
-    height: 2px;
-    width: 0%;
+    content: ""; position: absolute; left:0; right:0; bottom:-2px; height:2px; width:0%;
     background: linear-gradient(90deg, rgba(37,99,235,0.95), rgba(124,58,237,0.9));
-    border-radius: 9999px;
-    transition: width .26s cubic-bezier(.2,.9,.3,1);
-    opacity: 0.95;
+    border-radius: 9999px; transition: width .26s cubic-bezier(.2,.9,.3,1); opacity:0.95;
   }
-  .nav-underline:hover::after,
-  .nav-underline.active::after {
-    width: 100%;
-  }
+  .nav-underline:hover::after, .nav-underline.active::after { width:100%; }
 
-  /* small floating effect for nav items to feel tactile */
-  .nav-float {
-    transition: transform .18s ease, color .18s ease;
-  }
-  .nav-float:hover {
-    transform: translateY(-2px);
-  }
+  .nav-float { transition: transform .18s ease, color .18s ease; }
+  .nav-float:hover { transform: translateY(-2px); }
 
-  /* Mobile menu hamburger animation (rotate effect) */
   .hamburger-rotate.open {
     transform-origin: center;
     transition: transform .28s cubic-bezier(.2,.9,.3,1);
     transform: rotate(90deg) scale(1.02);
   }
 
-  /* Focus ring for keyboard users */
-  .focus-ring:focus-visible {
-    outline: none;
-    box-shadow: 0 0 0 6px rgba(37,99,235,0.08);
-    border-radius: 10px;
-  }
-
-  /* Button press micro-interaction */
-  .btn-press {
-    transition: transform .12s ease, box-shadow .12s ease;
-  }
-  .btn-press:active {
-    transform: translateY(1px) scale(0.998);
-  }
-
-  /* Mobile menu animation helper fallback (if JS height animation not applied) */
-  .menu-slide {
-    transition: max-height .28s cubic-bezier(.2,.9,.3,1), opacity .22s ease;
-  }
-
-  /* Marquee / logos in navbar area - ensure consistent size */
-  .company-logo {
-    height: 32px;
-    width: auto;
-    object-fit: contain;
-    padding: 4px;
-    border-radius: 6px;
-    background: rgba(255,255,255,0.6);
-    transition: transform .28s cubic-bezier(.2,.9,.3,1), box-shadow .22s ease, filter .22s ease;
-  }
-
-  /* Respect reduced-motion preference */
-  @media (prefers-reduced-motion: reduce) {
-    .logo-anim,
-    .nav-float,
-    .btn-press,
-    .hamburger-rotate,
-    .moving-blob,
-    .photo-img {
-      transition: none !important;
-      animation: none !important;
-      transform: none !important;
-    }
-  }
-}
-
-/* Optional add-on: subtle shimmer to call attention to "Post a Job" — add class shimmer-call */
-.shimmer-call {
-  background-image: linear-gradient(90deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.15) 50%, rgba(255,255,255,0.06) 100%);
-  background-size: 200% 100%;
-  animation: shimmer 3.2s linear infinite;
-}
-@keyframes shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
-}
-
-
-@layer components {
-  /*
-    Footer component styles for the provided Footer.jsx.
-    Drop this into your existing src/index.css (it can be appended to the file we already added for the navbar).
-    Uses same design tokens ( --brand-start / --brand-mid / --brand-end ) and shared utilities (btn-press, focus-ring, card-hover).
-  */
-
-  .footer {
-    @apply bg-gradient-to-t from-white/80 to-white/60 backdrop-blur-sm border-t border-gray-100 text-gray-700;
-  }
-
-  .footer > .max-w-7xl {
-    /* ensure the inner container has a little more vertical breathing room on small screens */
-    padding-top: 2.5rem; /* 40px */
-    padding-bottom: 2.5rem;
-  }
-
-  /* Grid layout for the footer columns */
-  .footer-grid {
-    display: grid;
-    grid-template-columns: repeat(1, minmax(0, 1fr));
-    gap: 1.25rem; /* 20px */
-  }
-
-  @media (min-width: 640px) {
-    .footer-grid {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 1.5rem; /* 24px */
-    }
-  }
-  @media (min-width: 1024px) {
-    .footer-grid {
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 2rem; /* 32px */
-    }
-  }
-
-  .footer-col {
-    @apply relative;
-  }
-
-  /* Small status pill used beside "Trusted" */
+  /* ---------- Shared UI atoms ---------- */
   .pill {
     @apply inline-flex items-center justify-center text-xs font-medium rounded-full px-2 py-0.5 bg-indigo-50 text-indigo-700;
     box-shadow: 0 6px 18px rgba(79,70,229,0.05);
     transition: transform .18s ease, box-shadow .18s ease;
   }
-  .pill:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 14px 40px rgba(79,70,229,0.08);
-  }
+  .pill:hover { transform: translateY(-2px); box-shadow: 0 14px 40px rgba(79,70,229,0.08); }
 
-  /* Footer links — subtle underline on hover and accessible focus ring */
-  .footer-link {
-    @apply text-gray-600 hover:text-indigo-600 transition-colors duration-200 inline-block;
-    position: relative;
-    padding-bottom: 0.125rem;
-  }
-  .footer-link::after {
-    content: "";
-    position: absolute;
-    left: 0;
-    bottom: 0;
-    height: 2px;
-    width: 0;
-    background: linear-gradient(90deg, var(--brand-mid), var(--brand-end));
-    border-radius: 9999px;
-    transition: width .22s cubic-bezier(.2,.9,.3,1);
-    opacity: 0.95;
-  }
-  .footer-link:hover::after,
-  .footer-link:focus-visible::after {
-    width: 100%;
-  }
+  .focus-ring:focus-visible { outline: none; box-shadow: 0 0 0 6px rgba(37,99,235,0.08); border-radius: 10px; }
 
-  /* CTA / Contact card inside footer */
-  .footer-cta {
-    @apply bg-gradient-to-br from-white to-white/95 rounded-lg p-4 border border-gray-100 shadow-sm;
-    background-image: linear-gradient(180deg, rgba(255,255,255,0.86), rgba(255,255,255,0.96));
-    transition: transform .22s cubic-bezier(.2,.9,.3,1), box-shadow .22s cubic-bezier(.2,.9,.3,1);
+  /* ---------- Buttons / small controls ---------- */
+  .mobile-search-btn {
+    transition: transform .18s cubic-bezier(.2,.9,.3,1), box-shadow .18s ease;
+    will-change: transform;
+    background: linear-gradient(180deg, rgba(255,255,255,0.95), rgba(255,255,255,0.85));
+    border: 1px solid rgba(15,23,42,0.04);
   }
+  .mobile-search-btn:active { transform: translateY(1px) scale(.998); }
 
-  /* Reusable elevation hover for cards */
-  .card-hover:hover {
-    transform: translateY(-6px);
-    box-shadow: 0 18px 60px rgba(2,6,23,0.07);
-  }
-
-  /* Small micro interaction for buttons inside the footer (already used in site) */
-  .btn-press {
-    @apply inline-flex items-center justify-center;
-    transition: transform .12s ease, box-shadow .12s ease, opacity .12s ease;
-  }
-  .btn-press:active {
-    transform: translateY(1px) scale(.998);
-  }
-
-  /* Contact/support row inside CTA */
-  .footer-cta svg {
-    @apply text-gray-400;
-  }
-
-  /* Social icons area */
-  .social-icon {
-    @apply inline-flex items-center justify-center h-8 w-8 rounded-md bg-transparent text-gray-600 transition-transform duration-200;
-    border-radius: 0.5rem;
-  }
-  .social-icon:hover {
-    @apply bg-indigo-50 text-indigo-600;
-    transform: translateY(-3px) scale(1.02);
-    box-shadow: 0 10px 30px rgba(79,70,229,0.06);
-  }
-  .social-icon:focus-visible {
-    outline: none;
-    box-shadow: 0 0 0 4px rgba(79,70,229,0.12);
-    border-radius: 8px;
-  }
-
-  /* Legal row layout */
-  .footer-legal {
-    @apply mt-8 border-t border-gray-100 pt-6 flex flex-col gap-3 text-sm text-gray-500;
-  }
-  @media (min-width: 768px) {
-    .footer-legal {
-      @apply flex-row items-center justify-between;
-    }
-  }
-
-  /* Utility to softly float brand image inside CTA */
-  .footer-cta img {
-    transition: transform .28s ease, filter .28s ease;
-  }
-  .footer-cta:hover img {
-    transform: translateY(-6px) rotate(-4deg) scale(1.02);
-    filter: saturate(1.05);
-  }
-
-  /* Make the footer feel slightly "lifted" on dark backgrounds or when scrolled */
-  .footer.glow {
-    box-shadow: 0 -8px 40px rgba(79,70,229,0.02);
-  }
-
-  /* Small decorative helper for compact lists */
-  .footer .text-xs {
-    color: #9CA3AF; /* tailwind gray-400 equivalent for consistency */
-  }
-}
-
-
-@layer components {
-  /*
-    Small CSS helpers for the HeroSection that are high-performance and
-    designed to be used with Tailwind utilities in your project.
-    Append this inside your src/index.css @layer components block.
-  */
-
-  /* moving-gradient-shift: subtle, low-cost animated background (uses transform/opacity) */
-  .moving-gradient-shift {
-    background: radial-gradient(600px 300px at 10% 10%, rgba(37,99,235,0.08), transparent 12%),
-                radial-gradient(500px 240px at 90% 90%, rgba(124,58,237,0.06), transparent 12%);
-    animation: slowShift 12s linear infinite;
-    will-change: transform, opacity;
-    opacity: 1;
-  }
-
-  @keyframes slowShift {
-    0% { transform: translate3d(0,0,0) rotate(0deg) scale(1); }
-    50% { transform: translate3d(6px,-8px,0) rotate(2deg) scale(1.02); }
-    100% { transform: translate3d(0,0,0) rotate(0deg) scale(1); }
-  }
-
-  /* moving blobs */
-  .moving-blob {
-    position: absolute;
-    width: 420px;
-    height: 420px;
-    border-radius: 9999px;
-    filter: blur(36px);
-    opacity: 0.7;
-    background: radial-gradient(circle at 20% 30%, rgba(37,99,235,0.18), rgba(124,58,237,0.12) 35%, rgba(236,72,153,0.06) 65%, transparent 70%);
-    transform: translateZ(0);
-    will-change: transform, opacity;
-    animation: blobFloat 10s ease-in-out infinite;
-  }
-
-  .moving-blob.blob-2 {
-    width: 360px;
-    height: 360px;
-    background: radial-gradient(circle at 80% 80%, rgba(124,58,237,0.18), rgba(37,99,235,0.08) 30%, rgba(236,72,153,0.04) 60%, transparent 70%);
-    animation-duration: 14s;
-    opacity: 0.6;
-  }
-
-  @keyframes blobFloat {
-    0% { transform: translate3d(0,0,0) scale(1); }
-    30% { transform: translate3d(-16px,-8px,0) scale(1.04); }
-    60% { transform: translate3d(12px,10px,0) scale(0.98); }
-    100% { transform: translate3d(0,0,0) scale(1); }
-  }
-
-  /* gradient border wrapper for the input (subtle, performant) */
-  .gradient-border {
-    position: relative;
-    display: inline-block;
-  }
-
+  /* ---------- Gradient border helper (search input wrapper) ---------- */
+  .gradient-border { position: relative; display: inline-block; }
   .gradient-border::before {
     content: "";
     position: absolute;
@@ -381,14 +149,12 @@ body {
     z-index: 0;
     transition: opacity .28s ease, transform .28s cubic-bezier(.2,.9,.3,1);
     transform-origin: center;
+    /* IMPORTANT: don't block input/button clicks */
+    pointer-events: none;
   }
+  .gradient-border--active::before { opacity: 0.28; transform: scale(1.02); }
 
-  .gradient-border--active::before {
-    opacity: 0.28;
-    transform: scale(1.02);
-  }
-
-  /* search glow (soft ellipse under input) */
+  /* ---------- Search glow ---------- */
   .search-glow {
     height: 52px;
     width: 420px;
@@ -398,772 +164,123 @@ body {
     transition: transform .4s cubic-bezier(.2,.9,.3,1), opacity .28s ease;
     will-change: transform, opacity;
   }
+  @media (max-width: 640px) { .search-glow { width: 260px; height: 42px; filter: blur(20px); } }
 
-  /* sheen overlay on photo */
-  .photo-sheen {
-    background: linear-gradient(90deg, rgba(255,255,255,0.0) 0%, rgba(255,255,255,0.06) 40%, rgba(255,255,255,0.0) 80%);
-    transform: rotate(-20deg) translateX(-10%);
-    transition: transform 1.4s ease;
-    opacity: 0.9;
-    mix-blend-mode: screen;
+  /* ---------- Mobile search panel helpers ---------- */
+  /* Ensure these classes are present and authoritative so JS + markup can rely on them */
+  .mobile-search-backdrop { z-index: 9988; position: fixed; inset:0; }
+  .mobile-search-panel { z-index: 9999; pointer-events: auto; position: relative; }
+  .mobile-search-panel input,
+  .mobile-search-panel button { pointer-events: auto; }
+
+  /* ---------- CTA / footer / layout helpers ---------- */
+  .footer { @apply bg-gradient-to-t from-white/80 to-white/60 backdrop-blur-sm border-t border-gray-100 text-gray-700; }
+  .footer > .max-w-7xl { padding-top: 2.5rem; padding-bottom: 2.5rem; }
+  .footer-grid { display: grid; grid-template-columns: repeat(1, minmax(0, 1fr)); gap: 1.25rem; }
+  @media (min-width: 640px) { .footer-grid { grid-template-columns: repeat(2, minmax(0,1fr)); gap:1.5rem; } }
+  @media (min-width: 1024px) { .footer-grid { grid-template-columns: repeat(4, minmax(0,1fr)); gap:2rem; } }
+  .footer-col { @apply relative; }
+  .footer-link { @apply text-gray-600 hover:text-indigo-600 transition-colors duration-200 inline-block; position:relative; padding-bottom:0.125rem; }
+  .footer-link::after {
+    content: ""; position:absolute; left:0; bottom:0; height:2px; width:0; background: linear-gradient(90deg, var(--brand-mid), var(--brand-end)); border-radius:9999px; transition: width .22s cubic-bezier(.2,.9,.3,1); opacity:0.95;
   }
-  .photo-card:hover .photo-sheen { transform: translateX(24%) rotate(-20deg); }
+  .footer-link:hover::after, .footer-link:focus-visible::after { width: 100%; }
 
-  /* slow pulse for CTA small dot */
-  .animate-pulse-slow {
-    animation: pulseSlow 2.8s infinite ease-in-out;
-  }
-  @keyframes pulseSlow {
-    0% { transform: scale(1); opacity: 1; }
-    50% { transform: scale(1.2); opacity: 0.6; }
-    100% { transform: scale(1); opacity: 1; }
-  }
+  .footer-cta { @apply bg-gradient-to-br from-white to-white/95 rounded-lg p-4 border border-gray-100 shadow-sm; background-image: linear-gradient(180deg, rgba(255,255,255,0.86), rgba(255,255,255,0.96)); transition: transform .22s cubic-bezier(.2,.9,.3,1), box-shadow .22s cubic-bezier(.2,.9,.3,1); }
 
-  /* company logo helper */
-  .company-logo {
-    height: 36px;
-    width: auto;
-    object-fit: contain;
-    padding: 6px;
-    border-radius: 8px;
-    background: rgba(255,255,255,0.6);
-    transition: transform .28s cubic-bezier(.2,.9,.3,1), box-shadow .28s ease, filter .28s ease;
-    will-change: transform, filter;
-  }
-  .company-logo:hover { transform: translateY(-6px) scale(1.03); box-shadow: 0 18px 40px rgba(2,6,23,0.08); filter: saturate(1.06); }
+  .social-icon { @apply inline-flex items-center justify-center h-8 w-8 rounded-md bg-transparent text-gray-600 transition-transform duration-200; border-radius: .5rem; }
+  .social-icon:hover { @apply bg-indigo-50 text-indigo-600; transform: translateY(-3px) scale(1.02); box-shadow: 0 10px 30px rgba(79,70,229,0.06); }
+  .social-icon:focus-visible { outline:none; box-shadow: 0 0 0 4px rgba(79,70,229,0.12); border-radius:8px; }
 
-  /* small photo-img smoothing */
-  .photo-img {
-    display: block;
-    width: 100%;
-    height: 320px;
-    object-fit: cover;
-    transition: transform .9s cubic-bezier(.2,.9,.3,1), filter .5s ease;
-    will-change: transform, filter;
-  }
-  .photo-img:hover { transform: scale(1.02); }
-
-  /* Respect reduced motion */
-  @media (prefers-reduced-motion: reduce) {
-    .moving-blob, .moving-gradient-shift, .photo-img, .animate-pulse-slow {
-      animation: none !important;
-      transition: none !important;
-      transform: none !important;
-    }
-  }
- 
-  @layer components {
-  /*
-    Mobile search panel + hero helpers (append inside your existing @layer components).
-    This block contains only CSS needed for the search improvements and marquee helpers.
-  */
-
-  /* mobile circular search button */
-  .mobile-search-btn {
-    transition: transform .18s cubic-bezier(.2,.9,.3,1), box-shadow .18s ease;
-    will-change: transform;
-    background: linear-gradient(180deg, rgba(255,255,255,0.95), rgba(255,255,255,0.85));
-    border: 1px solid rgba(15,23,42,0.04);
-  }
-  .mobile-search-btn:active { transform: translateY(1px) scale(.998); }
-
-  /* subtle shadow used for the marquee container in hero */
-  .shadow-inner {
-    box-shadow: inset 0 1px 0 rgba(255,255,255,0.8), 0 8px 20px rgba(2,6,23,0.04);
-  }
-
-  /* focus visible inside mobile panel (fixed selector: removed stray space) */
-  .mobile-search-btn:focus-visible,
-  .mobile-search-panel:focus-visible {
-    outline: none;
-    box-shadow: 0 0 0 6px rgba(37,99,235,0.08);
-    border-radius: 10px;
-  }
-
-  /* optional handy classes for non-Tailwind z-index control (if you prefer) */
-  .mobile-search-backdrop { z-index: 40; }
-  .mobile-search-panel { z-index: 50; pointer-events: auto; }
-
-  /* search glow size adjust for small screens */
-  @media (max-width: 640px) {
-    .search-glow { width: 260px; height: 42px; filter: blur(20px); }
-  }
-  /* Add these small helpers (append to your existing components CSS) */
-
-/* Make sure the backdrop sits below the panel and only intercepts clicks when open */
-.mobile-search-backdrop {
-  z-index: 40; /* backdrop below the panel */
-}
-
-/* Panel wrapper should be above the backdrop and accept pointer events */
-.mobile-search-panel {
-  z-index: 50;
-  pointer-events: auto;
-}
-
-/* Defensive: ensure inputs and buttons inside the panel accept pointer events */
-.mobile-search-panel input,
-.mobile-search-panel button {
-  pointer-events: auto;
-}
-
-/* Optional: if you prefer controlling with Tailwind z- classes, ensure they match these values */
-}
-}
-/* ===========================
-   🔄 Infinite Logo Marquee Animation
-   =========================== */
-
-.marquee {
-  overflow: hidden;
-  position: relative;
-}
-
-.marquee-track {
-  display: flex;
-  width: max-content;
-  animation: scroll var(--marquee-duration, 20s) linear infinite;
-  will-change: transform;
-}
-
-.marquee-track:hover {
-  animation-play-state: paused;
-}
-
-.marquee-group {
-  display: flex;
-  align-items: center;
-  gap: 3rem;
-}
-
-.company-logo {
-  height: 40px;
-  width: auto;
-  opacity: 0.8;
-  transition: opacity 0.3s ease;
-}
-
-.company-logo:hover {
-  opacity: 1;
-}
-
-/* 🌀 Keyframes for infinite scrolling (Right ➜ Left) */
-@keyframes scroll {
-  from {
-    transform: translateX(0);
-  }
-  to {
-    transform: translateX(calc(-1 * var(--marquee-width)));
-  }
-}
-
-/* Optional: nice gradient mask edges */
-.marquee::before,
-.marquee::after {
-  content: "";
-  position: absolute;
-  top: 0;
-  width: 100px;
-  height: 100%;
-  pointer-events: none;
-  z-index: 10;
-}
-
-.marquee::before {
-  left: 0;
-  background: linear-gradient(to right, white 40%, transparent);
-}
-
-.marquee::after {
-  right: 0;
-  background: linear-gradient(to left, white 40%, transparent);
-}
-
-@layer components {
-  /*
-    .logo-card
-    - fixed height, auto width (fit-content)
-    - white card, subtle border, rounded-xl, padding 14px
-    - drop shadow
-    - logos centered inside
-    - logos auto-scale: max-height: 32px; object-fit: contain
-    - 20px horizontal gap between cards (use marquee-group gap)
-    - on hover: scale(1.04) + stronger shadow
-  */
+  /* ---------- Logo card / marquee helpers ---------- */
   .logo-card {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    height: 60px; /* 14px padding top + 32px max logo + 14px padding bottom */
-    width: -webkit-fit-content;
-    width: fit-content;
-    padding: 14px;
-    background-color: #ffffff;
-    border-radius: 0.75rem; /* rounded-xl */
-    border: 1px solid rgba(15, 23, 42, 0.06); /* subtle border */
-    box-shadow: 0 6px 18px rgba(2, 6, 23, 0.06);
-    box-sizing: border-box;
-    transition: transform .18s cubic-bezier(.2,.9,.3,1), box-shadow .18s ease;
-    will-change: transform, box-shadow;
-    vertical-align: middle;
-    /* don't add per-card margin; marquee spacing controlled via .marquee-group gap */
+    display:inline-flex; align-items:center; justify-content:center; height:60px; width:fit-content; padding:14px;
+    background:#fff; border-radius:.75rem; border:1px solid rgba(15,23,42,0.06); box-shadow:0 6px 18px rgba(2,6,23,0.06);
+    transition: transform .18s cubic-bezier(.2,.9,.3,1), box-shadow .18s ease; will-change: transform, box-shadow; min-width:64px;
   }
+  .logo-card:hover { transform: scale(1.04); box-shadow: 0 18px 48px rgba(2,6,23,0.12); }
+  .logo-card > img, .logo-card > .company-logo { display:block; max-height:32px !important; height:auto !important; width:auto !important; object-fit:contain !important; margin:0; padding:0; }
 
-  /* Ensure consistent 20px horizontal gap between cards */
-  .marquee-group {
-    gap: 20px !important;
-  }
+  .marquee { overflow:hidden; position:relative; }
+  .marquee-track { display:flex; width:max-content; animation: scroll var(--marquee-duration,20s) linear infinite; will-change: transform; }
+  .marquee-track:hover { animation-play-state: paused; }
+  .marquee-group { display:flex; align-items:center; gap:20px; }
+  .marquee::before, .marquee::after { content:""; position:absolute; top:0; width:100px; height:100%; pointer-events:none; z-index:10; }
+  .marquee::before { left:0; background: linear-gradient(to right, white 40%, transparent); }
+  .marquee::after { right:0; background: linear-gradient(to left, white 40%, transparent); }
 
-  /* High-specificity sizing for images inside the card to override other .company-logo rules */
-  .logo-card > img,
-  .logo-card > .company-logo {
-    display: block;
-    max-height: 32px !important;
-    height: auto !important;
-    width: auto !important;
-    object-fit: contain !important;
-    max-width: 100%;
-    margin: 0;
-    padding: 0;
-  }
-
-  /* Prevent tiny logos from collapsing card too much - provide minimal card width */
-  .logo-card {
-    min-width: 64px;
-  }
-
-  /* Hover: subtle scale + stronger shadow */
-  .logo-card:hover {
-    transform: scale(1.04);
-    box-shadow: 0 18px 48px rgba(2, 6, 23, 0.12);
-  }
-
-  /* If JS hides a failed image by setting display:none on the card,
-     ensure marquee width calculation still works (your marquee JS reads group width).
-     Hiding the card by display:none is preferred since it removes empty tiles. */
-
-  /* Respect reduced motion preference */
-  @media (prefers-reduced-motion: reduce) {
-    .logo-card {
-      transition: none !important;
-      transform: none !important;
-      box-shadow: none !important;
-    }
-  }
-}
-
-@layer components {
-  /*
-    About page component styles for ZenView.
-    Append this inside your src/index.css @layer components block.
-    These styles provide subtle elevation, soft lighting, clean typography, and smooth micro-interactions.
-  */
-
-  :root {
-    --zen-accent: #2563eb;
-    --cta-start: #6366F1;
-    --cta-end: #2563EB;
-  }
-
-  /* Info cards (Mission / Vision / Values) */
-  .info-card {
-    transition: transform .18s cubic-bezier(.2,.9,.3,1), box-shadow .18s ease;
-    will-change: transform, box-shadow;
-  }
-  .info-card:hover {
-    transform: translateY(-6px);
-    box-shadow: 0 18px 50px rgba(2,6,23,0.06);
-  }
-
-  /* Photo card: strong shadow, rounded crop for premium feel */
-  .photo-card {
-    border-radius: 16px;
-    overflow: hidden;
-    background: linear-gradient(180deg, rgba(255,255,255,0.98), rgba(250,250,250,0.98));
-    border: 1px solid rgba(15,23,42,0.04);
-    box-shadow: 0 30px 80px rgba(2,6,23,0.10);
-    transition: transform .28s cubic-bezier(.2,.9,.3,1), box-shadow .28s ease;
-  }
-  .photo-card:hover {
-    transform: translateY(-6px);
-    box-shadow: 0 42px 110px rgba(2,6,23,0.14);
-  }
-
-  /* Team cards */
-  .team-card {
-    transition: transform .18s cubic-bezier(.2,.9,.3,1), box-shadow .18s ease;
-  }
-  .team-card:hover {
-    transform: translateY(-6px);
-    box-shadow: 0 18px 50px rgba(2,6,23,0.06);
-  }
-
-  /* Stat cards */
-  .stat-card {
-    transition: transform .18s ease, box-shadow .18s ease;
-  }
-  .stat-card:hover {
-    transform: translateY(-6px);
-    box-shadow: 0 18px 48px rgba(2,6,23,0.06);
-  }
-
-  /* CTA banner */
-  .cta-banner {
-    background: linear-gradient(90deg, var(--cta-start), var(--cta-end));
-    position: relative;
-    overflow: hidden;
-  }
-  .cta-banner::after {
-    content: "";
-    position: absolute;
-    right: -10%;
-    top: -10%;
-    width: 40%;
-    height: 200%;
-    background: radial-gradient(closest-side, rgba(255,255,255,0.08), transparent 40%);
-    transform: rotate(20deg);
-    pointer-events: none;
-  }
-
-  /* small reusable utilities */
-  .card-hover {
-    will-change: transform, box-shadow;
-  }
-  .btn-press {
-    transition: transform .12s ease, box-shadow .12s ease;
-  }
-  .btn-press:active {
-    transform: translateY(1px);
-  }
-
-  .focus-ring:focus-visible,
-  input:focus-visible,
-  button:focus-visible {
-    outline: none;
-    box-shadow: 0 0 0 4px rgba(37,99,235,0.12);
-    border-radius: 10px;
-  }
-
-  /* Suggestion: subtle fade-up entrance for sections */
-  .animate-fade-up {
-    animation: fadeUp .5s cubic-bezier(.2,.9,.3,1) both;
-  }
-  @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-
-  /* light float for imagery where applicable */
-  .animate-float {
-    animation: floatY 6s ease-in-out infinite;
-  }
-  @keyframes floatY {
-    0% { transform: translateY(0); }
-    50% { transform: translateY(-6px); }
-    100% { transform: translateY(0); }
-  }
-
-  /* Respect reduced motion */
-  @media (prefers-reduced-motion: reduce) {
-    .animate-fade-up,
-    .animate-float,
-    .info-card,
-    .team-card,
-    .photo-card,
-    .stat-card,
-    .cta-banner {
-      animation: none !important;
-      transition: none !important;
-      transform: none !important;
-    }
-  }
-}
-
-@layer components {
-  /*
-    Jobs page specific styles — append to src/index.css inside @layer components.
-    Provides card lift, neutral palette, chip styles, and empty-state styling.
-  */
-
-  :root {
-    --zen-blue: #2563EB;
-  }
-
-  /* Reusable card hover/lift used across job cards and other elements */
-  .card-hover {
-    transition: transform .18s cubic-bezier(.2,.9,.3,1), box-shadow .18s ease;
-    will-change: transform, box-shadow;
-  }
-  .card-hover:hover {
-    transform: translateY(-6px);
-    box-shadow: 0 20px 50px rgba(2,6,23,0.08);
-  }
-
-  /* Job card specific */
-  .job-card {
-    transition: box-shadow .18s ease, transform .18s ease;
-  }
-
-  /* Buttons micro-interactions */
-  .btn-press {
-    transition: transform .12s ease, box-shadow .12s ease, opacity .12s ease;
-  }
-  .btn-press:active {
-    transform: translateY(1px);
-  }
-
-  /* Suggestion & chips */
-  .chip {
-    @apply inline-flex items-center gap-2 px-3 py-1 rounded-md text-sm bg-gray-50 border border-gray-100 text-gray-700;
-  }
-  .chip:hover {
-    background: #F3F4F6;
-  }
-
-  /* Empty state styling */
-  .empty-state svg {
-    filter: grayscale(.12) saturate(.9);
-  }
-
-  /* Page spacing tweak */
-  .page-jobs .trust-logos img {
-    opacity: 0.9;
-    transition: transform .2s ease, opacity .2s ease;
-  }
-
-  /* Accessibility: focus ring for keyboard users */
-  .focus-ring:focus-visible,
-  input:focus-visible,
-  button:focus-visible,
-  select:focus-visible {
-    outline: none;
-    box-shadow: 0 0 0 4px rgba(37,99,235,0.12);
-    border-radius: 8px;
-  }
-
-  /* Responsive tweak: keep sidebar sticky only on larger viewports */
-  @media (max-width: 1023px) {
-    aside .sticky {
-      position: static;
-      top: auto;
-    }
-  }
-
-  /* Respect reduced motion */
-  @media (prefers-reduced-motion: reduce) {
-    .card-hover,
-    .btn-press {
-      transition: none !important;
-      transform: none !important;
-      box-shadow: none !important;
-    }
-  }
-}
-
-
-/* Add these styles inside your existing src/index.css file, preferably within @layer components.
-   They provide subtle fade-up animations, toast transitions, and a few helper utilities used above.
-*/
-
-@layer components {
-  .fade-up {
-    animation: fadeUp .44s cubic-bezier(.2,.9,.3,1) both;
-  }
-  @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(8px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-
-  /* Toast slide + fade helper */
-  .toast-slide {
-    transition: transform .32s cubic-bezier(.2,.9,.3,1), opacity .28s ease;
-  }
-
-  /* Focus ring utility for form controls */
-  .focus-ring:focus-visible,
-  input:focus-visible,
-  textarea:focus-visible,
-  button:focus-visible {
-    outline: none;
-    box-shadow: 0 0 0 6px rgba(37,99,235,0.08);
-    border-radius: 10px;
-  }
-
-  /* Slight elevation for preview box */
-  .resume-preview {
-    transition: transform .18s cubic-bezier(.2,.9,.3,1), box-shadow .18s ease;
-  }
-  .resume-preview:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 18px 40px rgba(2,6,23,0.06);
-  }
-
-  /* Ensure gradient backgrounds feel modern */
-  .bg-zen-gradient {
-    background: linear-gradient(90deg, #2563eb 0%, #7c3aed 100%);
-  }
-}
-
-/* Respect user reduced-motion preferences */
-@media (prefers-reduced-motion: reduce) {
-  .fade-up,
-  .resume-preview,
-  .toast-slide,
-  .photo-card,
-  .card-hover {
-    animation: none !important;
-    transition: none !important;
-    transform: none !important;
-  }
-}
-
-@layer components {
-  /*
-    Additions to support the Home.jsx redesign:
-    - Smooth transform-only animations (feature-animate, company-logo, photo-card)
-    - Gradient / glass helpers (backdrop-blur combos)
-    - Minimal, high-performance glow effects
-    NOTE: These are meant to be added inside your existing src/index.css (within @layer components)
-  */
-
-  /* Fade-in + subtle upward motion for entry */
-  .feature-animate {
-    animation: fadeInUp .56s cubic-bezier(.2,.9,.3,1) both;
-    will-change: transform, opacity;
-  }
-  @keyframes fadeInUp {
-    from { opacity: 0; transform: translateY(8px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-
-  /* Company logo styling - consistent sizing, GPU-accelerated transform on hover */
   .company-logo {
-    display: inline-block;
-    height: 36px;
-    width: auto;
-    object-fit: contain;
-    padding: 6px;
-    border-radius: 8px;
+    display:inline-block;
+    height:36px;
+    width:auto;
+    object-fit:contain;
+    padding:6px;
+    border-radius:8px;
     background: rgba(255,255,255,0.6);
     transition: transform .28s cubic-bezier(.2,.9,.3,1), filter .28s ease, box-shadow .28s ease, opacity .28s ease;
     will-change: transform, filter, opacity;
     transform-origin: center;
+    opacity: 0.8;
   }
-  .company-logo:hover {
-    transform: translateY(-6px) scale(1.04);
-    filter: saturate(1.05);
-    box-shadow: 0 18px 40px rgba(2,6,23,0.08);
-  }
+  .company-logo:hover { transform: translateY(-6px) scale(1.04); filter: saturate(1.05); box-shadow: 0 18px 40px rgba(2,6,23,0.08); opacity:1; }
 
-  /* Glass card helper (combined with Tailwind bg-opacity utilities) */
-  .glass-card {
-    background: linear-gradient(180deg, rgba(255,255,255,0.72), rgba(255,255,255,0.62));
-    border: 1px solid rgba(15,23,42,0.04);
-    -webkit-backdrop-filterr: blur(8px);
-  }
+  /* ---------- Cards / photos / hero helpers ---------- */
+  .photo-card { border-radius:16px; overflow:hidden; background: linear-gradient(180deg, rgba(255,255,255,0.98), rgba(250,250,250,0.98)); border:1px solid rgba(15,23,42,0.04); box-shadow:0 30px 80px rgba(2,6,23,0.10); transition: transform .28s cubic-bezier(.2,.9,.3,1), box-shadow .28s ease; }
+  .photo-card:hover { transform: translateY(-6px); box-shadow: 0 42px 110px rgba(2,6,23,0.14); }
 
-  /* Photo card image smoothing */
-  .photo-card-lg .photo-img {
-    transition: transform .9s cubic-bezier(.2,.9,.3,1), filter .5s ease;
-    will-change: transform, filter;
-  }
-  .photo-card-lg:hover .photo-img {
-    transform: scale(1.035);
-    filter: saturate(1.03) contrast(1.02);
-  }
+  .photo-img { display:block; width:100%; height:320px; object-fit:cover; transition: transform .9s cubic-bezier(.2,.9,.3,1), filter .5s ease; will-change: transform, filter; }
+  .photo-img:hover { transform: scale(1.02); }
 
-  /* Soft blur utility used for CTA glow */
-  .blur-3xl {
-    filter: blur(36px);
-  }
+  .feature-animate { animation: fadeInUp .56s cubic-bezier(.2,.9,.3,1) both; will-change: transform, opacity; }
+  .animate-fade-up { animation: fadeUp .5s cubic-bezier(.2,.9,.3,1) both; }
+  .animate-float { animation: floatY 6s ease-in-out infinite; }
 
-  /* Respect reduced motion */
-  @media (prefers-reduced-motion: reduce) {
-    .feature-animate,
-    .company-logo,
-    .photo-card-lg .photo-img {
-      animation: none !important;
-      transition: none !important;
-      transform: none !important;
-    }
-  }
+  /* ---------- Forms / register / login ---------- */
+  .register-gradient-border { position: relative; background: linear-gradient(135deg, rgba(79,70,229,0.5), rgba(124,58,237,0.4), rgba(6,182,212,0.3)); border-radius:1rem; padding:2px; animation: borderGlow 6s ease-in-out infinite; background-size:200% 200%; }
+  .register-input input:focus { outline:none; box-shadow: 0 0 0 2px rgba(99,102,241,0.25); }
+
+  .input-float { position:relative; background:white; border:1px solid rgba(203,213,225,0.7); transition: all .3s ease; }
+  .input-float:focus-within { border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99,102,241,0.15); }
+  .floating-label { position:absolute; left:12px; top:50%; transform: translateY(-50%); color:#94a3b8; font-size:.85rem; pointer-events:none; transition: all .25s ease; background:white; padding:0 4px; }
+  .input-float:focus-within .floating-label, .floating-label.has-value { top:-8px; left:10px; font-size:0.7rem; color:#4f46e5; }
+
+  .login-gradient-border { background: linear-gradient(135deg, rgba(79,70,229,0.9), rgba(124,58,237,0.85), rgba(6,182,212,0.8)); padding:2px; border-radius:1rem; animation: loginGradientFlow 6s ease-in-out infinite; background-size:200% 200%; }
+  .login-input-glow { background: rgba(255,255,255,0.6); border:1px solid rgba(226,232,240,0.8); transition: all .3s ease; }
+  .login-input-glow:focus-within { border-color: rgba(79,70,229,0.8); box-shadow: 0 0 12px rgba(79,70,229,0.4), inset 0 0 6px rgba(124,58,237,0.3); transform: scale(1.01); }
+  .login-link { background: linear-gradient(90deg, #4f46e5, #7c3aed, #06b6d4); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
 }
 
-@layer components {
-  /* Gradient border effect */
-  .register-gradient-border {
-    position: relative;
-    background: linear-gradient(
-      135deg,
-      rgba(79, 70, 229, 0.5),
-      rgba(124, 58, 237, 0.4),
-      rgba(6, 182, 212, 0.3)
-    );
-    border-radius: 1rem;
-    padding: 2px;
-    animation: borderGlow 6s ease-in-out infinite;
-    background-size: 200% 200%;
-  }
-
-  @keyframes borderGlow {
-    0% {
-      background-position: 0% 50%;
-    }
-    50% {
-      background-position: 100% 50%;
-    }
-    100% {
-      background-position: 0% 50%;
-    }
-  }
-
-  /* Floating label styling */
-  .input-float {
-    position: relative;
-    background: white;
-    border: 1px solid rgba(203, 213, 225, 0.7);
-    transition: all 0.3s ease;
-  }
-
-  .input-float:focus-within {
-    border-color: #6366f1;
-    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
-  }
-
-  .floating-label {
-    position: absolute;
-    left: 12px;
-    top: 50%;
-    transform: translateY(-50%);
-    color: #94a3b8;
-    font-size: 0.85rem;
-    pointer-events: none;
-    transition: all 0.25s ease;
-    background: white;
-    padding: 0 4px;
-  }
-
-  /* Move label up when field has value or focus */
-  .input-float:focus-within .floating-label,
-  .floating-label.has-value {
-    top: -8px;
-    left: 10px;
-    font-size: 0.7rem;
-    color: #4f46e5;
-  }
-
-  /* Glow border on focus */
-  .register-input input:focus {
-    outline: none;
-    box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.25);
-  }
-
-  /* Smooth fade/slide-in effect for card (backup for motion) */
-  .register-page .register-gradient-border {
-    animation: fadeSlide 1s ease forwards;
-  }
-
-  @keyframes fadeSlide {
-    0% {
-      opacity: 0;
-      transform: translateY(20px) scale(0.98);
-    }
-    100% {
-      opacity: 1;
-      transform: translateY(0) scale(1);
-    }
-  }
+/* =========================
+   Animations (centralized)
+   - merged duplicate keyframes
+   ========================= */
+@keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
+@keyframes slowShift {
+  0% { transform: translate3d(0,0,0) rotate(0deg) scale(1); }
+  50% { transform: translate3d(6px,-8px,0) rotate(2deg) scale(1.02); }
+  100% { transform: translate3d(0,0,0) rotate(0deg) scale(1); }
 }
-
-/* --- Background Blob Animation (backup for motion) --- */
-@keyframes blobMove {
-  0%, 100% {
-    transform: translate(0, 0) scale(1);
-  }
-  50% {
-    transform: translate(10px, -10px) scale(1.05);
-  }
+@keyframes blobFloat {
+  0% { transform: translate3d(0,0,0) scale(1); }
+  30% { transform: translate3d(-16px,-8px,0) scale(1.04); }
+  60% { transform: translate3d(12px,10px,0) scale(0.98); }
+  100% { transform: translate3d(0,0,0) scale(1); }
 }
+@keyframes pulseSlow { 0% { transform: scale(1); opacity:1; } 50% { transform: scale(1.2); opacity:0.6; } 100% { transform: scale(1); opacity:1; } }
+@keyframes fadeUp { from { opacity:0; transform: translateY(10px); } to { opacity:1; transform: translateY(0); } }
+@keyframes fadeInUp { from { opacity:0; transform: translateY(8px); } to { opacity:1; transform: translateY(0); } }
+@keyframes floatY { 0% { transform: translateY(0); } 50% { transform: translateY(-6px); } 100% { transform: translateY(0); } }
+@keyframes scroll { from { transform: translateX(0); } to { transform: translateX(calc(-1 * var(--marquee-width))); } }
+@keyframes borderGlow { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+@keyframes fadeSlide { 0% { opacity:0; transform: translateY(20px) scale(.98); } 100% { opacity:1; transform: translateY(0) scale(1); } }
+@keyframes loginGradientFlow { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+@keyframes loginGradientShift { 0%,100% { background-position: left center; } 50% { background-position: right center; } }
+@keyframes blobMove { 0%,100% { transform: translate(0,0) scale(1); } 50% { transform: translate(10px,-10px) scale(1.05); } }
 
-/* === Login Page Scoped Styles === */
-.login-page {
-  @apply min-h-screen flex items-center justify-center relative bg-gradient-to-b from-white via-sky-50 to-indigo-50 overflow-hidden;
-  font-family: 'Inter', system-ui, sans-serif;
-}
+/* =========================
+   Marquee / Logo final tweaks
+   ========================= */
+.marquee-track { will-change: transform; }
 
-/* --- Gradient Border for Login Card --- */
-.login-gradient-border {
-  background: linear-gradient(
-    135deg,
-    rgba(79, 70, 229, 0.9),
-    rgba(124, 58, 237, 0.85),
-    rgba(6, 182, 212, 0.8)
-  );
-  padding: 2px;
-  border-radius: 1rem;
-  animation: loginGradientFlow 6s ease-in-out infinite;
-  background-size: 200% 200%;
-}
-
-@keyframes loginGradientFlow {
-  0% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
-  }
-  100% {
-    background-position: 0% 50%;
-  }
-}
-
-/* --- Input Glow (Login Form Only) --- */
-.login-input-glow {
-  background: rgba(255, 255, 255, 0.6);
-  border: 1px solid rgba(226, 232, 240, 0.8);
-  transition: all 0.3s ease;
-  box-shadow: inset 0 0 0 0 rgba(79, 70, 229, 0.3);
-}
-
-.login-input-glow:focus-within {
-  border-color: rgba(79, 70, 229, 0.8);
-  box-shadow: 0 0 12px rgba(79, 70, 229, 0.4),
-              inset 0 0 6px rgba(124, 58, 237, 0.3);
-  transform: scale(1.01);
-}
-
-/* --- Zen Gradient Text (Login Links) --- */
-.login-link {
-  background: linear-gradient(90deg, #4f46e5, #7c3aed, #06b6d4);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
-/* --- Button Hover Animation (Scoped) --- */
-.login-btn {
-  transition: all 0.3s ease;
-}
-
-.login-btn:hover {
-  transform: translateY(-1px);
-}
-
-/* --- Gradient Animation (optional background) --- */
-.login-animate-gradient {
-  background-size: 200% 200%;
-  animation: loginGradientShift 8s ease infinite;
-}
-
-@keyframes loginGradientShift {
-  0%, 100% {
-    background-position: left center;
-  }
-  50% {
-    background-position: right center;
-  }
-}
-
-/* --- Placeholder Color --- */
-.login-page ::placeholder {
-  color: #94a3b8;
-}
+/* Placeholder color consistency */
+.login-page ::placeholder { color: #94a3b8; }

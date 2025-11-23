@@ -404,6 +404,15 @@ export default function HeroSection() {
         </div>
       </div>
 
+      {/* BACKDROP OUTSIDE MOTION (IMPORTANT FIX) */}
+      {mobileOpen && (
+        <div
+          onClick={() => setMobileOpen(false)}
+          className="fixed inset-0 bg-black/20 backdrop-blur-sm transition-opacity opacity-100 md:hidden mobile-search-backdrop"
+          style={{ zIndex: 9988 }}
+        />
+      )}
+
       <Motion.div
         initial={{ opacity: 0, y: -8, scale: 0.98 }}
         animate={
@@ -412,29 +421,15 @@ export default function HeroSection() {
             : { opacity: 0, y: -8, scale: 0.98 }
         }
         transition={{ duration: 0.26, ease: "easeOut" }}
-        className="fixed inset-x-4 top-6 md:hidden"
-        aria-hidden={!mobileOpen}
-        style={{ pointerEvents: mobileOpen ? "auto" : "none", zIndex: 9999 }}
+        className="fixed inset-x-4 top-6 md:hidden mobile-search-panel"
+        style={{ zIndex: 9999 }} // only z-index, nothing else
       >
-        {/* BACKDROP (below panel) */}
-        <div
-          onClick={() => setMobileOpen(false)}
-          className={`fixed inset-0 bg-black/20 backdrop-blur-sm transition-opacity ${
-            mobileOpen ? "opacity-100" : "opacity-0"
-          }`}
-          aria-hidden
-          style={{ zIndex: 9988, pointerEvents: mobileOpen ? "auto" : "none" }}
-        />
-
-        {/* PANEL (above backdrop) */}
+        {/* PANEL */}
         <div
           role="dialog"
           aria-modal="true"
-          aria-label="Search"
-          tabIndex={-1}
+          className="relative mx-auto max-w-lg bg-white/95 rounded-xl p-3"
           onClick={(e) => e.stopPropagation()}
-          className="relative mx-auto max-w-lg"
-          style={{ zIndex: 9999, pointerEvents: "auto" }}
         >
           <form onSubmit={onSubmit} className="relative">
             <div className="gradient-border rounded-2xl p-[2px]">
@@ -444,31 +439,21 @@ export default function HeroSection() {
                   id="hero-search-mobile"
                   value={q}
                   onChange={(e) => setQ(e.target.value)}
-                  placeholder="Search jobs, skills, or companies (e.g. 'frontend engineer')"
-                  aria-label="Search jobs"
-                  className="flex-1 bg-transparent placeholder:text-slate-400 text-sm focus:outline-none px-3 py-3 rounded-lg"
-                  style={{ pointerEvents: "auto" }}
-                  disabled={false}
+                  placeholder="Search jobs, skills, or companies..."
+                  className="flex-1 bg-transparent text-sm px-3 py-3 focus:outline-none"
                 />
 
                 <button
                   type="submit"
-                  aria-label="Search"
                   className="inline-flex items-center gap-2 rounded-lg px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white text-sm font-medium shadow-md"
-                  style={{ pointerEvents: "auto" }}
                 >
                   Search
                 </button>
 
                 <button
                   type="button"
-                  aria-label="Close search"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setMobileOpen(false);
-                  }}
-                  className="ml-2 p-2 rounded-full bg-white/80 hover:bg-white focus-ring"
-                  style={{ pointerEvents: "auto" }}
+                  onClick={() => setMobileOpen(false)}
+                  className="ml-2 p-2 rounded-full bg-white/80 hover:bg-white"
                 >
                   <svg
                     className="w-4 h-4 text-slate-700"
@@ -487,7 +472,6 @@ export default function HeroSection() {
               </div>
             </div>
 
-            {/* suggestions */}
             <div className="mt-3 bg-white/95 rounded-2xl border border-gray-100 shadow-sm p-3">
               <div className="flex flex-wrap gap-2">
                 {[
@@ -505,7 +489,6 @@ export default function HeroSection() {
                       nav(`/jobs?search=${encodeURIComponent(s)}`);
                     }}
                     className="px-3 py-1 rounded-full text-sm bg-slate-50 border border-slate-100 hover:bg-blue-50 transition"
-                    style={{ pointerEvents: "auto" }}
                   >
                     {s}
                   </button>
