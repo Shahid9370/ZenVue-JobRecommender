@@ -4,11 +4,10 @@ import { Link, useNavigate } from "react-router-dom";
 
 /**
  * HeroSection.jsx
- * Small, focused edits to make the mobile search panel interactive:
- * - backdrop gets lower stacking (z-40) and pointer-events only when open
- * - panel wrapper sits above the backdrop (z-50) and accepts pointer events
- * - defensive e.stopPropagation() on the close button
- * - small accessibility attributes added to the dialog
+ * - Uses AnimatePresence so the mobile backdrop & panel are mounted only when open
+ * - Adds explicit "open" class and data-open attribute so CSS controls visibility + pointer-events
+ * - Keeps marquee, hero visuals and all UI identical to your original
+ * - Ensures decorative visuals remain non-interactive (handled in CSS)
  */
 
 export default function HeroSection() {
@@ -22,7 +21,6 @@ export default function HeroSection() {
   const marqueeGroupRef = useRef(null);
   const nav = useNavigate();
 
-  // logos (sample) ...
   const logos = [
     {
       src: "https://upload.wikimedia.org/wikipedia/commons/b/ba/Stripe_Logo%2C_revised_2016.svg",
@@ -277,6 +275,7 @@ export default function HeroSection() {
                 aria-haspopup="dialog"
                 aria-expanded={mobileOpen}
                 className="mobile-search-btn inline-flex items-center justify-center w-11 h-11 rounded-full bg-white/90 shadow-md focus-ring"
+                type="button"
               >
                 <svg
                   className="w-5 h-5 text-slate-700"
@@ -404,100 +403,109 @@ export default function HeroSection() {
         </div>
       </div>
 
-      {/* BACKDROP OUTSIDE MOTION (IMPORTANT FIX) */}
-      {mobileOpen && (
-        <div
-          onClick={() => setMobileOpen(false)}
-          className="fixed inset-0 bg-black/20 backdrop-blur-sm transition-opacity opacity-100 md:hidden mobile-search-backdrop"
-          style={{ zIndex: 9988 }}
-        />
-      )}
+      {/* Backdrop + Panel mounted only when mobileOpen is true via AnimatePresence */}
+      <AnimatePresence>
+        {mobileOpen && (
+          <>
+            <div
+              key="mobile-search-backdrop"
+              onClick={() => setMobileOpen(false)}
+              className={`fixed inset-0 md:hidden mobile-search-backdrop ${
+                mobileOpen ? "open" : ""
+              }`}
+              aria-hidden={!mobileOpen}
+              data-open={mobileOpen ? "true" : "false"}
+            />
 
-      <Motion.div
-        initial={{ opacity: 0, y: -8, scale: 0.98 }}
-        animate={
-          mobileOpen
-            ? { opacity: 1, y: 0, scale: 1 }
-            : { opacity: 0, y: -8, scale: 0.98 }
-        }
-        transition={{ duration: 0.26, ease: "easeOut" }}
-        className="fixed inset-x-4 top-6 md:hidden mobile-search-panel"
-        style={{ zIndex: 9999 }} // only z-index, nothing else
-      >
-        {/* PANEL */}
-        <div
-          role="dialog"
-          aria-modal="true"
-          className="relative mx-auto max-w-lg bg-white/95 rounded-xl p-3"
-          onClick={(e) => e.stopPropagation()}
-        >
-          <form onSubmit={onSubmit} className="relative">
-            <div className="gradient-border rounded-2xl p-[2px]">
-              <div className="flex items-center gap-3 bg-white/95 rounded-[10px] px-3 py-2 shadow-lg">
-                <input
-                  ref={inputRef}
-                  id="hero-search-mobile"
-                  value={q}
-                  onChange={(e) => setQ(e.target.value)}
-                  placeholder="Search jobs, skills, or companies..."
-                  className="flex-1 bg-transparent text-sm px-3 py-3 focus:outline-none"
-                />
+            <Motion.div
+              key="mobile-search-panel"
+              initial={{ opacity: 0, y: -8, scale: 0.98 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -8, scale: 0.98 }}
+              transition={{ duration: 0.26, ease: "easeOut" }}
+              className={`mobile-search-panel md:hidden fixed inset-x-4 top-6 ${
+                mobileOpen ? "open" : ""
+              }`}
+              data-open={mobileOpen ? "true" : "false"}
+            >
+              <div
+                role="dialog"
+                aria-modal="true"
+                aria-label="Mobile search"
+                className="relative mx-auto max-w-lg bg-white/95 rounded-xl p-3"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <form onSubmit={onSubmit} className="relative">
+                  <div className="gradient-border rounded-2xl p-[2px]">
+                    <div className="flex items-center gap-3 bg-white/95 rounded-[10px] px-3 py-2 shadow-lg">
+                      <input
+                        ref={inputRef}
+                        id="hero-search-mobile"
+                        value={q}
+                        onChange={(e) => setQ(e.target.value)}
+                        placeholder="Search jobs, skills, or companies..."
+                        className="flex-1 bg-transparent text-sm px-3 py-3 focus:outline-none"
+                      />
 
-                <button
-                  type="submit"
-                  className="inline-flex items-center gap-2 rounded-lg px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white text-sm font-medium shadow-md"
-                >
-                  Search
-                </button>
+                      <button
+                        type="submit"
+                        className="inline-flex items-center gap-2 rounded-lg px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white text-sm font-medium shadow-md"
+                      >
+                        Search
+                      </button>
 
-                <button
-                  type="button"
-                  onClick={() => setMobileOpen(false)}
-                  className="ml-2 p-2 rounded-full bg-white/80 hover:bg-white"
-                >
-                  <svg
-                    className="w-4 h-4 text-slate-700"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M6 18L18 6M6 6l12 12"
-                    />
-                  </svg>
-                </button>
+                      <button
+                        type="button"
+                        onClick={() => setMobileOpen(false)}
+                        className="ml-2 p-2 rounded-full bg-white/80 hover:bg-white"
+                        aria-label="Close search"
+                      >
+                        <svg
+                          className="w-4 h-4 text-slate-700"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M6 18L18 6M6 6l12 12"
+                          />
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="mt-3 bg-white/95 rounded-2xl border border-gray-100 shadow-sm p-3">
+                    <div className="flex flex-wrap gap-2">
+                      {[
+                        "Frontend Engineer",
+                        "Product Manager",
+                        "Remote",
+                        "UX Designer",
+                      ].map((s) => (
+                        <button
+                          key={s}
+                          type="button"
+                          onClick={() => {
+                            setQ(s);
+                            setMobileOpen(false);
+                            nav(`/jobs?search=${encodeURIComponent(s)}`);
+                          }}
+                          className="px-3 py-1 rounded-full text-sm bg-slate-50 border border-slate-100 hover:bg-blue-50 transition"
+                        >
+                          {s}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </form>
               </div>
-            </div>
-
-            <div className="mt-3 bg-white/95 rounded-2xl border border-gray-100 shadow-sm p-3">
-              <div className="flex flex-wrap gap-2">
-                {[
-                  "Frontend Engineer",
-                  "Product Manager",
-                  "Remote",
-                  "UX Designer",
-                ].map((s) => (
-                  <button
-                    key={s}
-                    type="button"
-                    onClick={() => {
-                      setQ(s);
-                      setMobileOpen(false);
-                      nav(`/jobs?search=${encodeURIComponent(s)}`);
-                    }}
-                    className="px-3 py-1 rounded-full text-sm bg-slate-50 border border-slate-100 hover:bg-blue-50 transition"
-                  >
-                    {s}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </form>
-        </div>
-      </Motion.div>
+            </Motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </section>
   );
 }
