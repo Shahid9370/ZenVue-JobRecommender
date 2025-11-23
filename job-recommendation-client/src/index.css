@@ -451,6 +451,7 @@ body {
       transform: none !important;
     }
   }
+ 
   @layer components {
   /*
     Mobile search panel + hero helpers (append inside your existing @layer components).
@@ -471,18 +472,43 @@ body {
     box-shadow: inset 0 1px 0 rgba(255,255,255,0.8), 0 8px 20px rgba(2,6,23,0.04);
   }
 
-  /* focus visible inside mobile panel */
+  /* focus visible inside mobile panel (fixed selector: removed stray space) */
   .mobile-search-btn:focus-visible,
-  .mobile-search-panel :focus-visible {
+  .mobile-search-panel:focus-visible {
     outline: none;
     box-shadow: 0 0 0 6px rgba(37,99,235,0.08);
     border-radius: 10px;
   }
+
+  /* optional handy classes for non-Tailwind z-index control (if you prefer) */
+  .mobile-search-backdrop { z-index: 40; }
+  .mobile-search-panel { z-index: 50; pointer-events: auto; }
+
   /* search glow size adjust for small screens */
   @media (max-width: 640px) {
     .search-glow { width: 260px; height: 42px; filter: blur(20px); }
   }
- }
+  /* Add these small helpers (append to your existing components CSS) */
+
+/* Make sure the backdrop sits below the panel and only intercepts clicks when open */
+.mobile-search-backdrop {
+  z-index: 40; /* backdrop below the panel */
+}
+
+/* Panel wrapper should be above the backdrop and accept pointer events */
+.mobile-search-panel {
+  z-index: 50;
+  pointer-events: auto;
+}
+
+/* Defensive: ensure inputs and buttons inside the panel accept pointer events */
+.mobile-search-panel input,
+.mobile-search-panel button {
+  pointer-events: auto;
+}
+
+/* Optional: if you prefer controlling with Tailwind z- classes, ensure they match these values */
+}
 }
 /* ===========================
    🔄 Infinite Logo Marquee Animation
@@ -553,6 +579,78 @@ body {
   background: linear-gradient(to left, white 40%, transparent);
 }
 
+@layer components {
+  /*
+    .logo-card
+    - fixed height, auto width (fit-content)
+    - white card, subtle border, rounded-xl, padding 14px
+    - drop shadow
+    - logos centered inside
+    - logos auto-scale: max-height: 32px; object-fit: contain
+    - 20px horizontal gap between cards (use marquee-group gap)
+    - on hover: scale(1.04) + stronger shadow
+  */
+  .logo-card {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 60px; /* 14px padding top + 32px max logo + 14px padding bottom */
+    width: -webkit-fit-content;
+    width: fit-content;
+    padding: 14px;
+    background-color: #ffffff;
+    border-radius: 0.75rem; /* rounded-xl */
+    border: 1px solid rgba(15, 23, 42, 0.06); /* subtle border */
+    box-shadow: 0 6px 18px rgba(2, 6, 23, 0.06);
+    box-sizing: border-box;
+    transition: transform .18s cubic-bezier(.2,.9,.3,1), box-shadow .18s ease;
+    will-change: transform, box-shadow;
+    vertical-align: middle;
+    /* don't add per-card margin; marquee spacing controlled via .marquee-group gap */
+  }
+
+  /* Ensure consistent 20px horizontal gap between cards */
+  .marquee-group {
+    gap: 20px !important;
+  }
+
+  /* High-specificity sizing for images inside the card to override other .company-logo rules */
+  .logo-card > img,
+  .logo-card > .company-logo {
+    display: block;
+    max-height: 32px !important;
+    height: auto !important;
+    width: auto !important;
+    object-fit: contain !important;
+    max-width: 100%;
+    margin: 0;
+    padding: 0;
+  }
+
+  /* Prevent tiny logos from collapsing card too much - provide minimal card width */
+  .logo-card {
+    min-width: 64px;
+  }
+
+  /* Hover: subtle scale + stronger shadow */
+  .logo-card:hover {
+    transform: scale(1.04);
+    box-shadow: 0 18px 48px rgba(2, 6, 23, 0.12);
+  }
+
+  /* If JS hides a failed image by setting display:none on the card,
+     ensure marquee width calculation still works (your marquee JS reads group width).
+     Hiding the card by display:none is preferred since it removes empty tiles. */
+
+  /* Respect reduced motion preference */
+  @media (prefers-reduced-motion: reduce) {
+    .logo-card {
+      transition: none !important;
+      transform: none !important;
+      box-shadow: none !important;
+    }
+  }
+}
 
 @layer components {
   /*
