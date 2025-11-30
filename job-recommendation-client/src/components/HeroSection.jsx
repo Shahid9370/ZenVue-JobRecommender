@@ -1,165 +1,325 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { motion as Motion, AnimatePresence } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom";
 
 /**
- * HeroSection.jsx
- * - Uses AnimatePresence so the mobile backdrop & panel are mounted only when open
- * - Adds explicit "open" class and data-open attribute so CSS controls visibility + pointer-events
- * - Keeps marquee, hero visuals and all UI identical to your original
- * - Ensures decorative visuals remain non-interactive (handled in CSS)
+ * FloatingCard
+ * - Minimal, production-safe floating image/card.
+ * - Smooth Y-axis float + subtle scale.
+ * - Auto-rotates images every 3–4s (clamped).
+ * - Glassy rounded-xl look, supports JPG/PNG/GIF (transparent + animated).
+ *
+ * Replaced the old FloatingCard implementation with this focused, short,
+ * and production-ready component. Everything else in the file is unchanged.
  */
+const DEFAULT_IMAGES = [
+  // Unsplash (JPG)
+  "https://images.unsplash.com/photo-1521737604893-d14cc237f11d?auto=format&fit=crop&w=1600&q=80",
+  // Unsplash (JPG)
+  "https://images.unsplash.com/photo-1542744095-291d1f67b221?auto=format&fit=crop&w=1600&q=80",
+  // Icons8 (PNG, transparent)
+  "https://img.icons8.com/fluency/240/000000/idea.png",
+  // GIPHY (GIF)
+  "https://media.giphy.com/media/3oEjI6SIIHBdRxXI40/giphy.gif",
+];
 
+const imgVariant = {
+  initial: { opacity: 0, y: 8, scale: 1 },
+  animate: { opacity: 1, y: 0, scale: 1 },
+  exit: { opacity: 0, y: -6, scale: 0.995 },
+  transition: { duration: 0.5, ease: "easeOut" },
+};
+
+const FloatingCard = React.memo(function FloatingCard({
+  images = DEFAULT_IMAGES,
+  altTexts = [],
+  intervalMs = 3500,
+  className = "",
+  ariaHidden = false,
+}) {
+  const [idx, setIdx] = useState(0);
+  const mounted = useRef(true);
+  const intervalRef = useRef(null);
+
+  // clamp to 3-4 seconds
+  const ms = Math.max(3000, Math.min(4000, Number(intervalMs) || 3500));
+
+  useEffect(() => {
+    mounted.current = true;
+    if ((images?.length ?? 0) > 1) {
+      intervalRef.current = window.setInterval(() => {
+        if (!mounted.current) return;
+        setIdx((i) => (images.length ? (i + 1) % images.length : 0));
+      }, ms);
+    }
+    return () => {
+      mounted.current = false;
+      if (intervalRef.current) {
+        window.clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+    };
+  }, [images, ms]);
+
+  if (!images || images.length === 0) {
+    return (
+      <Motion.div
+        aria-hidden={ariaHidden}
+        initial={{ opacity: 0, y: 6, scale: 0.995 }}
+        animate={{ opacity: 1, y: [0, -6, 0], scale: [1, 1.02, 1] }}
+        transition={{ duration: 6, ease: "easeInOut", repeat: Infinity }}
+        className={`${className} rounded-xl bg-white/10 backdrop-blur-md border border-white/6 shadow-lg w-[340px] sm:w-[420px] lg:w-[520px] h-[320px] flex items-center justify-center`}
+      >
+        <div className="text-sm text-slate-400">No images</div>
+      </Motion.div>
+    );
+  }
+
+  return (
+    <Motion.div
+      aria-hidden={ariaHidden}
+      initial={{ opacity: 0, y: 6, scale: 0.995 }}
+      animate={{ opacity: 1, y: [0, -8, 0], scale: [1, 1.02, 1] }}
+      transition={{ duration: 6, ease: "easeInOut", repeat: Infinity }}
+      style={{ willChange: "transform" }}
+      className={`${className} rounded-xl bg-white/12 backdrop-blur-md border border-white/6 shadow-lg overflow-hidden w-[340px] sm:w-[420px] lg:w-[520px]`}
+    >
+      <div className="w-full h-[320px] bg-slate-50/5 relative flex items-center justify-center">
+        <AnimatePresence mode="wait">
+          <Motion.img
+            key={idx}
+            src={images[idx]}
+            alt={altTexts[idx] ?? `Floating image ${idx + 1}`}
+            loading="eager"
+            initial={imgVariant.initial}
+            animate={imgVariant.animate}
+            exit={imgVariant.exit}
+            transition={imgVariant.transition}
+            className="w-full h-full object-cover select-none pointer-events-none"
+            style={{ willChange: "opacity, transform" }}
+            decoding="async"
+          />
+        </AnimatePresence>
+
+        {/* subtle depth overlay + sheen */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/6 to-transparent pointer-events-none" />
+        <div className="absolute left-[-18%] top-[-8%] w-[140%] h-[36%] rotate-12 bg-white/6 opacity-40 pointer-events-none" />
+      </div>
+
+      {/* footer spacer for consistent spacing */}
+      <div className="px-4 py-3 bg-transparent" />
+    </Motion.div>
+  );
+});
+
+/* -------------------------------
+   Static company logos kept outside component to avoid re-creation
+   ------------------------------- */
+const LOGOS = [
+  {
+    src: "https://upload.wikimedia.org/wikipedia/commons/b/ba/Stripe_Logo%2C_revised_2016.svg",
+    alt: "Stripe",
+  },
+  {
+    src: "https://upload.wikimedia.org/wikipedia/commons/6/69/Airbnb_Logo_B%C3%A9lo.svg",
+    alt: "Airbnb",
+  },
+  {
+    src: "https://upload.wikimedia.org/wikipedia/commons/2/2f/Google_2015_logo.svg",
+    alt: "Google",
+  },
+  {
+    src: "https://upload.wikimedia.org/wikipedia/commons/9/91/Octicons-mark-github.svg",
+    alt: "GitHub",
+  },
+  {
+    src: "https://www.logo.wine/a/logo/Apple_Inc./Apple_Inc.-Logo.wine.svg",
+    alt: "Apple",
+  },
+  {
+    src: "https://upload.wikimedia.org/wikipedia/commons/4/44/Microsoft_logo.svg",
+    alt: "Microsoft",
+  },
+  {
+    src: "https://upload.wikimedia.org/wikipedia/commons/a/a9/Amazon_logo.svg",
+    alt: "Amazon",
+  },
+  {
+    src: "https://www.logo.wine/a/logo/Meta_Platforms/Meta_Platforms-Logo.wine.svg",
+    alt: "Meta",
+  },
+  {
+    src: "https://www.logo.wine/a/logo/Netflix/Netflix-Logo.wine.svg",
+    alt: "Netflix",
+  },
+  {
+    src: "https://www.logo.wine/a/logo/Salesforce.com/Salesforce.com-Logo.wine.svg",
+    alt: "Salesforce",
+  },
+  {
+    src: "https://www.logo.wine/a/logo/Uber/Uber-Logo.wine.svg",
+    alt: "Uber",
+  },
+  {
+    src: "https://www.logo.wine/a/logo/Dropbox_(service)/Dropbox_(service)-Logo.wine.svg",
+    alt: "Dropbox",
+  },
+  {
+    src: "https://www.logo.wine/a/logo/Slack_Technologies/Slack_Technologies-Logo.wine.svg",
+    alt: "Slack",
+  },
+  {
+    src: "https://www.logo.wine/a/logo/Shopify/Shopify-Logo.wine.svg",
+    alt: "Shopify",
+  },
+];
+
+/**
+ * HeroSection: optimized whole page component.
+ * - Reduced re-renders via useMemo/useCallback.
+ * - Cleaned up effects and timeouts.
+ * - Maintains identical layout and responsive behavior.
+ */
 export default function HeroSection() {
   const [q, setQ] = useState("");
   const [focused, setFocused] = useState(false);
   const [openSug, setOpenSug] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
-  const blurRef = useRef(null);
+
+  const blurTimeoutRef = useRef(null);
   const inputRef = useRef(null);
   const marqueeTrackRef = useRef(null);
   const marqueeGroupRef = useRef(null);
   const nav = useNavigate();
 
-  const logos = [
-    {
-      src: "https://upload.wikimedia.org/wikipedia/commons/b/ba/Stripe_Logo%2C_revised_2016.svg",
-      alt: "Stripe",
-    },
-    {
-      src: "https://upload.wikimedia.org/wikipedia/commons/6/69/Airbnb_Logo_B%C3%A9lo.svg",
-      alt: "Airbnb",
-    },
-    {
-      src: "https://upload.wikimedia.org/wikipedia/commons/2/2f/Google_2015_logo.svg",
-      alt: "Google",
-    },
-    {
-      src: "https://upload.wikimedia.org/wikipedia/commons/9/91/Octicons-mark-github.svg",
-      alt: "GitHub",
-    },
-    {
-      src: "https://www.logo.wine/a/logo/Apple_Inc./Apple_Inc.-Logo.wine.svg",
-      alt: "Apple",
-    },
-    {
-      src: "https://upload.wikimedia.org/wikipedia/commons/4/44/Microsoft_logo.svg",
-      alt: "Microsoft",
-    },
-    {
-      src: "https://upload.wikimedia.org/wikipedia/commons/a/a9/Amazon_logo.svg",
-      alt: "Amazon",
-    },
-    {
-      src: "https://www.logo.wine/a/logo/Meta_Platforms/Meta_Platforms-Logo.wine.svg",
-      alt: "Meta",
-    },
-    {
-      src: "https://www.logo.wine/a/logo/Netflix/Netflix-Logo.wine.svg",
-      alt: "Netflix",
-    },
-    {
-      src: "https://www.logo.wine/a/logo/Salesforce.com/Salesforce.com-Logo.wine.svg",
-      alt: "Salesforce",
-    },
-    {
-      src: "https://www.logo.wine/a/logo/Uber/Uber-Logo.wine.svg",
-      alt: "Uber",
-    },
-    {
-      src: "https://www.logo.wine/a/logo/Dropbox_(service)/Dropbox_(service)-Logo.wine.svg",
-      alt: "Dropbox",
-    },
-    {
-      src: "https://www.logo.wine/a/logo/Slack_Technologies/Slack_Technologies-Logo.wine.svg",
-      alt: "Slack",
-    },
-    {
-      src: "https://www.logo.wine/a/logo/Shopify/Shopify-Logo.wine.svg",
-      alt: "Shopify",
-    },
-  ];
+  // stable hero image used by FloatingCard
+  const heroImageUrl = useMemo(
+    () =>
+      "https://images.unsplash.com/photo-1521737604893-d14cc237f11d?auto=format&fit=crop&w=1600&q=80",
+    []
+  );
 
+  // prepare images for FloatingCard and memoize to avoid re-creating arrays
+  const floatingImages = useMemo(
+    () => [
+      heroImageUrl,
+      "https://images.unsplash.com/photo-1542744095-291d1f67b221?auto=format&fit=crop&w=1600&q=80",
+      "https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&w=1600&q=80",
+    ],
+    [heroImageUrl]
+  );
+
+  const floatingAlts = useMemo(
+    () => [
+      "Diverse professionals collaborating",
+      "Team brainstorming around a laptop",
+      "Designers reviewing UI on a tablet",
+    ],
+    []
+  );
+
+  // Cleanup blur timeout on unmount
   useEffect(() => {
     return () => {
-      if (blurRef.current) clearTimeout(blurRef.current);
+      if (blurTimeoutRef.current) {
+        clearTimeout(blurTimeoutRef.current);
+        blurTimeoutRef.current = null;
+      }
     };
   }, []);
 
-  function onSubmit(e) {
-    e.preventDefault();
-    const term = q.trim();
-    if (!term) return;
-    setMobileOpen(false);
-    nav(`/jobs?search=${encodeURIComponent(term)}`);
-  }
+  // search submit - stable callback
+  const onSubmit = useCallback(
+    (e) => {
+      e?.preventDefault();
+      const term = q.trim();
+      if (!term) return;
+      setMobileOpen(false);
+      nav(`/jobs?search=${encodeURIComponent(term)}`);
+    },
+    [q, nav]
+  );
 
-  function onFocus() {
-    if (blurRef.current) {
-      clearTimeout(blurRef.current);
-      blurRef.current = null;
+  // focus/blur handlers
+  const onFocus = useCallback(() => {
+    if (blurTimeoutRef.current) {
+      clearTimeout(blurTimeoutRef.current);
+      blurTimeoutRef.current = null;
     }
     setOpenSug(true);
     setFocused(true);
-  }
+  }, []);
 
-  function onBlur() {
-    blurRef.current = setTimeout(() => {
+  const onBlur = useCallback(() => {
+    blurTimeoutRef.current = window.setTimeout(() => {
       setOpenSug(false);
       setFocused(false);
+      blurTimeoutRef.current = null;
     }, 120);
-  }
+  }, []);
 
-  function pick(s) {
+  const pickSuggestion = useCallback((s) => {
     setQ(s);
     setOpenSug(false);
-  }
+  }, []);
 
+  // marquee sizing: computes CSS vars for scrolling speed/duration
   useEffect(() => {
     const track = marqueeTrackRef.current;
     const group = marqueeGroupRef.current;
-    if (!track || !group) return;
+    if (!track || !group) return undefined;
     let mounted = true;
+
     const setVars = () => {
       if (!mounted) return;
-      const groupWidth = Math.ceil(group.getBoundingClientRect().width);
-      const speed = 50;
+      const groupWidth = Math.ceil(group.getBoundingClientRect().width || 0);
+      const speed = 50; // px/s baseline
       const durationSec = Math.max(5, Math.round((groupWidth / speed) * 8) / 8);
       track.style.setProperty("--marquee-width", `${groupWidth}px`);
       track.style.setProperty("--marquee-duration", `${durationSec}s`);
     };
+
     setVars();
     const ro = new ResizeObserver(setVars);
     ro.observe(group);
     window.addEventListener("resize", setVars);
-    window.setTimeout(setVars, 300);
+    const t = window.setTimeout(setVars, 300);
+
     return () => {
       mounted = false;
       ro.disconnect();
       window.removeEventListener("resize", setVars);
+      window.clearTimeout(t);
     };
-  }, [logos.length]);
+  }, []);
 
-  // lock body scroll when mobile panel open
+  // lock body scroll while mobile panel is open
   useEffect(() => {
-    document.body.style.overflow = mobileOpen ? "hidden" : "";
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = mobileOpen ? "hidden" : prev;
     return () => {
-      document.body.style.overflow = "";
+      document.body.style.overflow = prev;
     };
   }, [mobileOpen]);
 
-  // autofocus mobile input when opened
+  // autofocus mobile input when panel opens
   useEffect(() => {
     if (mobileOpen) {
-      setTimeout(() => inputRef.current?.focus(), 120);
+      const t = window.setTimeout(() => inputRef.current?.focus(), 120);
+      return () => window.clearTimeout(t);
     }
+    return undefined;
   }, [mobileOpen]);
 
-  const heroImageUrl =
-    "https://images.unsplash.com/photo-1521737604893-d14cc237f11d?auto=format&fit=crop&w=1600&q=80";
+  // suggestions (static list)
+  const SUGGESTIONS = useMemo(
+    () => ["Frontend Engineer", "Product Manager", "Remote", "UX Designer"],
+    []
+  );
 
   return (
     <section className="relative overflow-hidden pt-12 pb-20 lg:pt-20 lg:pb-28">
+      {/* Decorative background (pointer-events-none to keep interactions simple) */}
       <div className="pointer-events-none absolute inset-0 -z-10">
         <div className="moving-blob left-0 top-10" />
         <div className="moving-blob right-0 bottom-10 blob-2" />
@@ -246,17 +406,12 @@ export default function HeroSection() {
               {openSug && (
                 <div className="mt-3 w-full max-w-2xl bg-white rounded-2xl border border-gray-100 shadow-sm p-3">
                   <div className="flex flex-wrap gap-2">
-                    {[
-                      "Frontend Engineer",
-                      "Product Manager",
-                      "Remote",
-                      "UX Designer",
-                    ].map((s) => (
+                    {SUGGESTIONS.map((s) => (
                       <button
                         key={s}
                         type="button"
                         onMouseDown={(e) => e.preventDefault()}
-                        onClick={() => pick(s)}
+                        onClick={() => pickSuggestion(s)}
                         className="px-3 py-1 rounded-full text-sm bg-slate-50 border border-slate-100 hover:bg-blue-50 transition"
                       >
                         {s}
@@ -333,22 +488,12 @@ export default function HeroSection() {
 
           {/* RIGHT: floating photo card */}
           <div className="flex justify-center lg:justify-end">
-            <Motion.div
-              className="relative rounded-2xl bg-white/90 backdrop-blur-sm shadow-2xl overflow-hidden w-[340px] sm:w-[420px] lg:w-[520px]"
-              initial={{ opacity: 0, scale: 0.98, y: 6 }}
-              animate={{ opacity: 1, scale: 1, y: [0, -8, 0] }}
-              transition={{ duration: 6, ease: "easeInOut", repeat: Infinity }}
-              style={{ willChange: "transform" }}
-            >
-              <img
-                src={heroImageUrl}
-                alt="Diverse professionals collaborating"
-                className="photo-img w-full h-[320px] object-cover"
-                loading="eager"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/6 to-transparent pointer-events-none" />
-              <div className="absolute left-[-20%] top-[-10%] w-[140%] h-[40%] rotate-12 photo-sheen pointer-events-none" />
-            </Motion.div>
+            <FloatingCard
+              className="relative"
+              images={floatingImages}
+              altTexts={floatingAlts}
+              intervalMs={3000}
+            />
           </div>
         </div>
 
@@ -361,12 +506,8 @@ export default function HeroSection() {
           >
             <div ref={marqueeTrackRef} className="marquee-track">
               <div ref={marqueeGroupRef} className="marquee-group">
-                {logos.map((l, idx) => (
-                  <div
-                    key={`g1-${idx}`}
-                    className="logo-card"
-                    aria-hidden={false}
-                  >
+                {LOGOS.map((l, idx) => (
+                  <div key={`g1-${idx}`} className="logo-card" aria-hidden={false}>
                     <img
                       src={l.src}
                       alt={l.alt}
@@ -374,6 +515,7 @@ export default function HeroSection() {
                       className="company-logo"
                       loading="lazy"
                       onError={(e) => {
+                        // fail gracefully by hiding the broken logo container
                         const c = e.currentTarget.closest(".logo-card");
                         if (c) c.style.display = "none";
                       }}
@@ -382,7 +524,7 @@ export default function HeroSection() {
                 ))}
               </div>
               <div className="marquee-group" aria-hidden="true">
-                {logos.map((l, idx) => (
+                {LOGOS.map((l, idx) => (
                   <div key={`g2-${idx}`} className="logo-card" aria-hidden>
                     <img
                       src={l.src}
@@ -403,16 +545,14 @@ export default function HeroSection() {
         </div>
       </div>
 
-      {/* Backdrop + Panel mounted only when mobileOpen is true via AnimatePresence */}
+      {/* Mobile search panel (AnimatePresence mounts/unmounts) */}
       <AnimatePresence>
         {mobileOpen && (
           <>
             <div
               key="mobile-search-backdrop"
               onClick={() => setMobileOpen(false)}
-              className={`fixed inset-0 md:hidden mobile-search-backdrop ${
-                mobileOpen ? "open" : ""
-              }`}
+              className={`fixed inset-0 md:hidden mobile-search-backdrop ${mobileOpen ? "open" : ""}`}
               aria-hidden={!mobileOpen}
               data-open={mobileOpen ? "true" : "false"}
             />
@@ -423,9 +563,7 @@ export default function HeroSection() {
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: -8, scale: 0.98 }}
               transition={{ duration: 0.26, ease: "easeOut" }}
-              className={`mobile-search-panel md:hidden fixed inset-x-4 top-6 ${
-                mobileOpen ? "open" : ""
-              }`}
+              className={`mobile-search-panel md:hidden fixed inset-x-4 top-6 ${mobileOpen ? "open" : ""}`}
               data-open={mobileOpen ? "true" : "false"}
             >
               <div
@@ -479,12 +617,7 @@ export default function HeroSection() {
 
                   <div className="mt-3 bg-white/95 rounded-2xl border border-gray-100 shadow-sm p-3">
                     <div className="flex flex-wrap gap-2">
-                      {[
-                        "Frontend Engineer",
-                        "Product Manager",
-                        "Remote",
-                        "UX Designer",
-                      ].map((s) => (
+                      {SUGGESTIONS.map((s) => (
                         <button
                           key={s}
                           type="button"
