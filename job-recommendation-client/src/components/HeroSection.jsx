@@ -3,110 +3,83 @@ import { motion as Motion, AnimatePresence } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom";
 
 /**
- * FloatingCard
- * - Minimal, production-safe floating image/card.
- * - Smooth Y-axis float + subtle scale.
- * - Auto-rotates images every 3–4s (clamped).
- * - Glassy rounded-xl look, supports JPG/PNG/GIF (transparent + animated).
+ * FloatingCard: lightweight, self-contained floating image card.
+ * - Glassy look using Tailwind utilities.
+ * - Gentle float animation on the container.
+ * - Auto-rotates through provided images every intervalMs with fade + slide.
  *
- * Replaced the old FloatingCard implementation with this focused, short,
- * and production-ready component. Everything else in the file is unchanged.
+ * Memoized to avoid unnecessary re-renders. Keeps API small and predictable.
  */
-const DEFAULT_IMAGES = [
-  // Unsplash (JPG)
-  "https://images.unsplash.com/photo-1521737604893-d14cc237f11d?auto=format&fit=crop&w=1600&q=80",
-  // Unsplash (JPG)
-  "https://images.unsplash.com/photo-1542744095-291d1f67b221?auto=format&fit=crop&w=1600&q=80",
-  // Icons8 (PNG, transparent)
-  "https://img.icons8.com/fluency/240/000000/idea.png",
-  // GIPHY (GIF)
-  "https://media.giphy.com/media/3oEjI6SIIHBdRxXI40/giphy.gif",
-];
-
-const imgVariant = {
-  initial: { opacity: 0, y: 8, scale: 1 },
-  animate: { opacity: 1, y: 0, scale: 1 },
-  exit: { opacity: 0, y: -6, scale: 0.995 },
-  transition: { duration: 0.5, ease: "easeOut" },
-};
-
 const FloatingCard = React.memo(function FloatingCard({
-  images = DEFAULT_IMAGES,
+  images = [],
   altTexts = [],
-  intervalMs = 3500,
+  intervalMs = 3000,
   className = "",
   ariaHidden = false,
 }) {
-  const [idx, setIdx] = useState(0);
-  const mounted = useRef(true);
+  const [index, setIndex] = useState(0);
   const intervalRef = useRef(null);
 
-  // clamp to 3-4 seconds
-  const ms = Math.max(3000, Math.min(4000, Number(intervalMs) || 3500));
+  // Ensure stable images.length reference for the effect
+  const imagesCount = images.length;
 
   useEffect(() => {
-    mounted.current = true;
-    if ((images?.length ?? 0) > 1) {
-      intervalRef.current = window.setInterval(() => {
-        if (!mounted.current) return;
-        setIdx((i) => (images.length ? (i + 1) % images.length : 0));
-      }, ms);
-    }
+    if (imagesCount <= 1) return undefined;
+
+    // rotate images
+    intervalRef.current = window.setInterval(() => {
+      setIndex((i) => (imagesCount ? (i + 1) % imagesCount : 0));
+    }, Math.max(500, intervalMs));
+
     return () => {
-      mounted.current = false;
       if (intervalRef.current) {
         window.clearInterval(intervalRef.current);
         intervalRef.current = null;
       }
     };
-  }, [images, ms]);
+  }, [imagesCount, intervalMs]);
 
-  if (!images || images.length === 0) {
-    return (
-      <Motion.div
-        aria-hidden={ariaHidden}
-        initial={{ opacity: 0, y: 6, scale: 0.995 }}
-        animate={{ opacity: 1, y: [0, -6, 0], scale: [1, 1.02, 1] }}
-        transition={{ duration: 6, ease: "easeInOut", repeat: Infinity }}
-        className={`${className} rounded-xl bg-white/10 backdrop-blur-md border border-white/6 shadow-lg w-[340px] sm:w-[420px] lg:w-[520px] h-[320px] flex items-center justify-center`}
-      >
-        <div className="text-sm text-slate-400">No images</div>
-      </Motion.div>
-    );
-  }
+  const imgVariants = {
+    initial: { opacity: 0, y: 8 },
+    animate: { opacity: 1, y: 0 },
+    exit: { opacity: 0, y: -6 },
+    transition: { duration: 0.5, ease: "easeOut" },
+  };
 
   return (
     <Motion.div
       aria-hidden={ariaHidden}
       initial={{ opacity: 0, y: 6, scale: 0.995 }}
-      animate={{ opacity: 1, y: [0, -8, 0], scale: [1, 1.02, 1] }}
+      animate={{ opacity: 1, y: [0, -6, 0] }}
       transition={{ duration: 6, ease: "easeInOut", repeat: Infinity }}
-      style={{ willChange: "transform" }}
-      className={`${className} rounded-xl bg-white/12 backdrop-blur-md border border-white/6 shadow-lg overflow-hidden w-[340px] sm:w-[420px] lg:w-[520px]`}
+      style={{ willChange: "transform", transform: "translate3d(0,0,0)" }}
+      className={`${className} relative rounded-2xl bg-white/12 backdrop-blur-md border border-white/8 shadow-2xl overflow-hidden w-[340px] sm:w-[420px] lg:w-[520px]`}
     >
-      <div className="w-full h-[320px] bg-slate-50/5 relative flex items-center justify-center">
+      <div className="w-full h-[320px] bg-slate-50/5 flex items-center justify-center relative">
         <AnimatePresence mode="wait">
-          <Motion.img
-            key={idx}
-            src={images[idx]}
-            alt={altTexts[idx] ?? `Floating image ${idx + 1}`}
-            loading="eager"
-            initial={imgVariant.initial}
-            animate={imgVariant.animate}
-            exit={imgVariant.exit}
-            transition={imgVariant.transition}
-            className="w-full h-full object-cover select-none pointer-events-none"
-            style={{ willChange: "opacity, transform" }}
-            decoding="async"
-          />
+          {imagesCount > 0 && (
+            <Motion.img
+              key={index}
+              src={images[index]}
+              alt={altTexts[index] ?? `Floating image ${index + 1}`}
+              className="w-full h-full object-cover"
+              loading="eager"
+              initial={imgVariants.initial}
+              animate={imgVariants.animate}
+              exit={imgVariants.exit}
+              transition={imgVariants.transition}
+              style={{ willChange: "opacity, transform" }}
+            />
+          )}
         </AnimatePresence>
 
-        {/* subtle depth overlay + sheen */}
+        {/* subtle gradient overlay for depth */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/6 to-transparent pointer-events-none" />
-        <div className="absolute left-[-18%] top-[-8%] w-[140%] h-[36%] rotate-12 bg-white/6 opacity-40 pointer-events-none" />
+        {/* sheen */}
+        <div className="absolute left-[-20%] top-[-10%] w-[140%] h-[40%] rotate-12 bg-white/6 opacity-40 pointer-events-none" />
       </div>
 
-      {/* footer spacer for consistent spacing */}
+      {/* Minimal footer preserved for layout parity */}
       <div className="px-4 py-3 bg-transparent" />
     </Motion.div>
   );
