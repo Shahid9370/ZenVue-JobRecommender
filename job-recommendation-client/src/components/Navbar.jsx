@@ -2,12 +2,16 @@ import React, { useEffect, useRef, useState } from "react";
 import { Link, NavLink, useLocation } from "react-router-dom";
 
 /**
- * Navbar.jsx
- * - Glassmorphism-style responsive navbar with smooth hover and mobile collapse
- * - Uses a refs-based maxHeight animation for the mobile menu to avoid layout "jumps"
- * - Accessible: aria-controls, aria-expanded, keyboard focus styles
- * - Keeps transform-only hover effects for smooth GPU-accelerated animation
+ * Navbar.jsx — visual upgrade to Liquid Glass style using Tailwind only
+ *
+ * Minor change:
+ * - Center the mobile menu content under the navbar when open so options don't stick to the left.
+ * - Achieved by making the mobile menu outer container a flex row with justify-center,
+ *   and constraining the inner panel to a centered max width (max-w-md).
+ *
+ * All original logic (route-close, JS maxHeight animation, accessibility) unchanged.
  */
+
 export default function Navbar() {
   const [open, setOpen] = useState(false);
   const location = useLocation();
@@ -49,22 +53,37 @@ export default function Navbar() {
   const activeClass = "text-indigo-600 font-semibold";
 
   return (
-    <header className="navbar-glass fixed inset-x-3 top-4 z-50 flex justify-center pointer-events-auto">
+    <header
+      className="fixed inset-x-4 top-5 z-50 flex justify-center pointer-events-auto"
+      aria-label="Main site header"
+    >
       <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
+        {/* Floating glass navbar */}
+        <div
+          className="flex items-center justify-between h-16
+                     rounded-2xl px-3 py-2
+                     bg-white/40 dark:bg-slate-900/36
+                     backdrop-blur-md
+                     border border-white/10 dark:border-slate-800/20
+                     shadow-lg
+                     ring-1 ring-white/6
+                     transition-all duration-250"
+          role="navigation"
+        >
           {/* Logo */}
           <div className="flex items-center gap-3">
             <Link to="/" className="flex items-center gap-3">
               <div
-                className="flex items-center justify-center h-10 w-10 rounded-lg logo-anim text-white font-semibold shadow"
+                className="flex items-center justify-center h-10 w-10 rounded-lg logo-anim text-white font-semibold shadow
+                           bg-gradient-to-br from-indigo-600 to-cyan-400"
                 aria-hidden="true"
               >
                 Z
               </div>
 
-              <div className="hidden sm:flex flex-col leading-tight">
-                <span className="text-lg font-semibold tracking-tight text-slate-900">ZenVue</span>
-                <span className="text-xs text-slate-500 -mt-0.5">Job Portal</span>
+              <div className="hidden sm:flex flex-col leading-tight select-none">
+                <span className="text-lg font-semibold tracking-tight text-slate-900 dark:text-black">ZenVue</span>
+                <span className="text-xs text-slate-700 dark:text-slate-400 -mt-0.5">Job Portal</span>
               </div>
             </Link>
           </div>
@@ -91,7 +110,7 @@ export default function Navbar() {
             <div className="hidden md:flex items-center gap-3">
               <Link
                 to="/post-job"
-                className="text-sm px-3 py-2 rounded-md bg-gradient-to-r from-indigo-600 to-blue-600 text-white shadow hover:opacity-95 btn-press focus-ring"
+                className="text-sm px-3 py-2 rounded-md bg-gradient-to-r from-indigo-600 to-cyan-500 text-white shadow-sm hover:opacity-95 btn-press focus-ring"
                 aria-label="Post a job"
               >
                 Post a Job
@@ -121,9 +140,10 @@ export default function Navbar() {
               onClick={() => setOpen((v) => !v)}
               aria-controls="mobile-menu"
               aria-expanded={open}
-              className="inline-flex items-center justify-center p-2 rounded-md text-slate-700 md:hidden hover:bg-slate-100 transition-transform transform focus-ring"
+              className="inline-flex items-center justify-center p-2 rounded-md text-slate-800 md:hidden hover:bg-white/20 dark:hover:bg-slate-800/20 transition-transform transform focus-ring"
               aria-label="Toggle menu"
               title="Toggle menu"
+              type="button"
             >
               <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
                 <g className={`hamburger-rotate ${open ? "open" : ""}`}>
@@ -138,21 +158,25 @@ export default function Navbar() {
           </div>
         </div>
 
-        {/* Mobile menu (animated height + fade) */}
+        {/* Mobile menu (animated height + fade). Outer container now centers inner panel. */}
         <div
           id="mobile-menu"
           ref={mobileRef}
-          className="md:hidden overflow-hidden transition-[max-height,opacity] duration-300 ease-[cubic-bezier(.2,.9,.3,1)]"
-          style={{ maxHeight: 0, opacity: 0, pointerEvents: "none" }}
+          className="md:hidden overflow-hidden transition-[max-height,opacity] duration-300 ease-[cubic-bezier(.2,.9,.3,1)] mt-3 flex justify-center"
+          // initial state controlled by JS (maxHeight/opacity/pointerEvents) to avoid layout jumps
         >
-          <div ref={mobileInnerRef} className="px-4 py-4 flex flex-col gap-3 bg-white/90 rounded-b-2xl mt-3 border border-slate-100 shadow-sm">
+          {/* Inner panel constrained to a centered width so it appears centered below navbar */}
+          <div
+            ref={mobileInnerRef}
+            className="px-4 py-4 flex flex-col gap-3 rounded-2xl bg-white/50 backdrop-blur-sm border border-white/10 shadow-sm w-full max-w-md mx-auto"
+          >
             {navItems.map((item) => (
               <NavLink
                 key={item.to}
                 to={item.to}
                 end={item.to === "/"}
                 className={({ isActive }) =>
-                  `py-3 text-base rounded-md ${isActive ? "font-semibold text-indigo-600" : "text-slate-700 hover:text-indigo-600"}`
+                  `w-full text-center block py-3 text-base rounded-md ${isActive ? "font-semibold text-indigo-600" : "text-slate-700 hover:text-indigo-600"}`
                 }
               >
                 {item.label}
