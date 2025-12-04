@@ -2,8 +2,9 @@ import React from "react";
 import HeroSection from "../components/HeroSection";
 import FeaturedJobs from "../components/FeaturedJobs";
 import Categories from "../components/Categories";
+// Use the marquee parent component and pass the testimonials array explicitly
 import Testimonials from "../components/Testimonials";
-import { featuredJobs } from "../utils/constants";
+import { featuredJobs, testimonials } from "../utils/constants";
 
 /**
  * Home page — updated look for a premium AI-inspired job portal.
@@ -99,9 +100,9 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Testimonials */}
+        {/* Testimonials — use the marquee parent and pass the testimonials array */}
         <section className="mt-10">
-          <Testimonials />
+          <Testimonials testimonials={testimonials} rows={3} />
         </section>
 
         {/* CTA */}

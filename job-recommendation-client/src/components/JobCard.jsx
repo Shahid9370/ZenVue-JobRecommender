@@ -35,7 +35,7 @@ export default function JobCard({ job, onApply }) {
   const logoSrc = getLogoUrl(job?.company);
 
   return (
-    <article className="bg-white border border-gray-100 rounded-xl p-4 shadow-sm hover:shadow-md transition">
+    <article className="bg- border border-gray-100 rounded-xl p-4 shadow-sm hover:shadow-md transition">
       <div className="flex items-start gap-4">
         <img
           src={logoSrc}
