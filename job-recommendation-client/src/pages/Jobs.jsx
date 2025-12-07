@@ -95,56 +95,75 @@ export default function Jobs() {
 
   // Upload resume and fetch matches
   async function findMatches() {
-  setMatchError("");
-  setMatchedJobs(null);
+    setMatchError("");
+    setServerNote("");
+    setMatchedJobs(null);
 
-  if (!selectedFile) {
-    setMatchError("Please choose a resume file (PDF or DOCX).");
-    return;
-  }
+    if (!selectedFile) {
+      setMatchError("Please choose a resume file (PDF or DOCX).");
+      return;
+    }
 
-  setLoadingMatches(true);
-  try {
-    const fd = new FormData();
-    fd.append("resume", selectedFile);
+    setLoadingMatches(true);
+    try {
+      const fd = new FormData();
+      fd.append("resume", selectedFile);
 
-    const res = await fetch("https://zenvue-jobrecommender.onrender.com", {
-      method: "POST",
-      body: fd,
-    });
+      // include token if available (from your auth flow)
+      const token = localStorage.getItem("token") || "";
 
-    if (!res.ok) {
-      // Try to parse JSON error first
-      let errMsg = "Server error";
+      const res = await fetch(`${RESUME_API.replace(/\/$/, "")}/api/resume-match`, {
+        method: "POST",
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+        body: fd,
+      });
+
+      // Try to parse body regardless of status so we can show server note/help
+      let body = null;
+      let textBody = null;
       try {
-        const errBody = await res.json();
-        if (errBody && errBody.error) errMsg = errBody.error;
-        else if (errBody && errBody.message) errMsg = errBody.message;
-      } catch (parseErr) {
-        // fallback to text
+        body = await res.clone().json();
+      } catch (jsonErr) {
         try {
-          const txt = await res.text();
-          if (txt) errMsg = txt;
-        } catch (_e) {
-          /* ignore */
+          textBody = await res.clone().text();
+        } catch (tErr) {
+          textBody = null;
         }
       }
-      throw new Error(errMsg);
-    }
 
-    const payload = await res.json();
-    if (!Array.isArray(payload.matches)) {
-      throw new Error("Invalid response from server");
-    }
+      // If response not ok, extract useful info and show friendly message
+      if (!res.ok) {
+        let errMsg = "Server error";
+        if (body) {
+          if (body.error) errMsg = body.error;
+          else if (body.message) errMsg = body.message;
+          if (body.note) setServerNote(body.note);
+          if (body.note_hi) setServerNote((prev) => prev ? `${prev}\n${body.note_hi}` : body.note_hi);
+        } else if (textBody) {
+          errMsg = textBody;
+        }
+        throw new Error(errMsg);
+      }
 
-    setMatchedJobs(payload.matches);
-  } catch (err) {
-    console.error("Resume match error:", err);
-    setMatchError(err.message || "Failed to process resume");
-  } finally {
-    setLoadingMatches(false);
+      // Normal successful response: expects { matches: [...] }
+      const payload = body || (textBody ? JSON.parse(textBody) : null);
+      if (!payload || !Array.isArray(payload.matches)) {
+        throw new Error("Invalid response from server");
+      }
+
+      // If server provided a "note", show it
+      if (payload.note) setServerNote(payload.note);
+      if (payload.note_hi) setServerNote((prev) => prev ? `${prev}\n${payload.note_hi}` : payload.note_hi);
+
+      // payload.matches expected to be array of { job, matchPercent } or similar
+      setMatchedJobs(payload.matches);
+    } catch (err) {
+      console.error("Resume match error:", err);
+      setMatchError(err.message || "Failed to process resume");
+    } finally {
+      setLoadingMatches(false);
+    }
   }
-}
 
   // When toggling modes, reset AI states so UI is clean
   function toggleAiMode(enable) {
