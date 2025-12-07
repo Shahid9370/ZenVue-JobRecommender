@@ -5,7 +5,7 @@ import Categories from "../components/Categories";
 // Use the marquee parent component and pass the testimonials array explicitly
 import Testimonials from "../components/Testimonials";
 import { featuredJobs, testimonials } from "../utils/constants";
-
+import { Link } from "react-router-dom";
 /**
  * Home page — updated look for a premium AI-inspired job portal.
  * - Uses gradient + glass hero (HeroSection handles the main search highlight)
@@ -70,10 +70,7 @@ export default function Home() {
         </section>
 
         {/* Featured Jobs */}
-        <section className="mt-10">
-          <h2 className="text-xl font-semibold mb-4">Featured jobs</h2>
           <FeaturedJobs />
-        </section>
 
         {/* Categories */}
         <section className="mt-10">
@@ -111,12 +108,12 @@ export default function Home() {
             <h4 className="text-2xl font-semibold">Ready to upgrade your career with AI?</h4>
             <p className="mt-2 text-white/90">Create a profile and let ZenVue surface the roles that fit you best.</p>
             <div className="mt-4 flex flex-col sm:flex-row justify-center gap-3">
-              <a href="/register" className="px-5 py-3 bg-white text-blue-700 rounded-md font-medium inline-block hover:shadow-lg transition btn-gradient">
+              <Link href="/register" className="px-5 py-3 bg-white text-blue-700 rounded-md font-medium inline-block hover:shadow-lg transition btn-gradient">
                 Get started
-              </a>
-              <a href="/jobs" className="px-5 py-3 border border-white/30 rounded-md text-white inline-block hover:bg-white/10 transition">
+              </Link>
+              <Link href="/jobs" className="px-5 py-3 border border-white/30 rounded-md text-white inline-block hover:bg-white/10 transition">
                 Browse jobs
-              </a>
+              </Link>
             </div>
           </div>
         </section>

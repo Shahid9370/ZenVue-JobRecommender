@@ -30,7 +30,7 @@ export const COMPANY_LOGOS = {
   "Acme Corp": `${PLACEHOLD_BASE}/80x80/E6F0FF/0F172A?text=AC&font=roboto`,
   "DesignHub": `${PLACEHOLD_BASE}/80x80/FFF3EC/7C3AED?text=DH&font=roboto`,
   "Marketly": `${PLACEHOLD_BASE}/80x80/FEF3C7/92400E?text=M&font=roboto`,
-  "ZenVue": `${PLACEHOLD_BASE}/80x80/EEFBF7/064E3B?text=ZV&font=roboto`,
+  "ZenVu": `${PLACEHOLD_BASE}/80x80/EEFBF7/064E3B?text=ZV&font=roboto`,
   "Supportly": `${PLACEHOLD_BASE}/80x80/F0F9FF/075985?text=S&font=roboto`,
 };
 
