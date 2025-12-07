@@ -108,7 +108,7 @@ export default function Jobs() {
     const fd = new FormData();
     fd.append("resume", selectedFile);
 
-    const res = await fetch("/api/resume-match", {
+    const res = await fetch("https://zenvue-jobrecommender.onrender.com", {
       method: "POST",
       body: fd,
     });
@@ -120,12 +120,12 @@ export default function Jobs() {
         const errBody = await res.json();
         if (errBody && errBody.error) errMsg = errBody.error;
         else if (errBody && errBody.message) errMsg = errBody.message;
-      } catch (_parseErr) {
+      } catch (parseErr) {
         // fallback to text
         try {
           const txt = await res.text();
           if (txt) errMsg = txt;
-        } catch (e) {
+        } catch (_e) {
           /* ignore */
         }
       }
