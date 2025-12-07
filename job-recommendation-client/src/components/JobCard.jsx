@@ -1,126 +1,95 @@
-import React, { useState } from "react";
+import React from "react";
 import { Link } from "react-router-dom";
 
 /**
- * JobCard - uses direct web-hosted company logos via Clearbit.
- * No local files. No images.js. Loads only when online.
+ * JobCard — extended to show matchPercent (optional)
+ *
+ * Props:
+ * - job: job object (title, company, location, salary, type, tags, logo, postedAt, id)
+ * - matchPercent: optional number (0-100) to display as match badge (AI mode)
+ *
+ * This component focuses on presentational markup and is reusable both for normal and AI modes.
  */
-export default function JobCard({ job, onApply }) {
-  const [saved, setSaved] = useState(false);
 
-  function handleSave(e) {
-    e.preventDefault();
-    setSaved((s) => !s);
-  }
-
-  function handleApply(e) {
-    e.preventDefault();
-    if (onApply) onApply(job);
-    window.location.href = `/jobs/${job.id}`;
-  }
-
-  // DIRECT: Map company → real web logo
-  const getLogoUrl = (company) => {
-    const domainMap = {
-      "Acme Corp": "acme.com",
-      "DesignHub": "designhub.com",
-      "Marketly": "marketly.com",
-      "ZenVue": "ZenVue.com",
-      "Supportly": "supportly.com",
-    };
-    const domain = domainMap[company] || `${company.toLowerCase().replace(/\s+/g, "")}.com`;
-    return `https://logo.clearbit.com/${domain}`;
-  };
-
-  const logoSrc = getLogoUrl(job?.company);
-
+export default function JobCard({ job, matchPercent }) {
   return (
-    <article className="bg- border border-gray-100 rounded-xl p-4 shadow-sm hover:shadow-md transition">
-      <div className="flex items-start gap-4">
+    <div className="flex flex-col h-full">
+      <div className="flex items-start gap-3">
         <img
-          src={logoSrc}
-          alt={`${job?.company} logo`}
-          className="h-12 w-12 rounded-md object-contain bg-gray-50 p-1"
-          loading="lazy"
-          onError={(e) => {
-            // Graceful fallback if logo fails to load
-            e.target.src = `https://placehold.co/80x80/EDF2FF/0F172A?text=${encodeURIComponent(
-              job?.company.charAt(0)
-            )}&font=roboto`;
-          }}
+          src={job.logo || `https://placehold.co/64x64/EEEEEE/111827?text=Logo`}
+          alt={job.company}
+          className="h-12 w-12 rounded-md object-cover flex-shrink-0"
         />
-
         <div className="flex-1 min-w-0">
-          <div className="flex items-start justify-between gap-4">
-            <div className="truncate">
-              <h3 className="text-lg font-semibold text-gray-900 truncate">{job?.title}</h3>
-              <p className="text-sm text-gray-500 truncate">
-                {job?.company} • {job?.location}
-              </p>
+          <div className="flex items-start justify-between gap-3">
+            <div className="min-w-0">
+              <h3 className="text-md font-semibold text-gray-900 truncate">{job.title}</h3>
+              <div className="text-sm text-gray-500 truncate">{job.company}</div>
             </div>
 
-            <div className="text-right shrink-0">
-              {job?.salary && (
-                <div className="text-sm font-medium text-gray-800">
-                  {job.salary}
+            {/* Match badge if provided */}
+            {typeof matchPercent === "number" && (
+              <div className="flex-shrink-0">
+                <div
+                  className="px-2 py-1 rounded-md text-sm font-medium"
+                  style={{
+                    background:
+                      matchPercent >= 75
+                        ? "linear-gradient(90deg,#16a34a,#059669)"
+                        : matchPercent >= 40
+                        ? "linear-gradient(90deg,#f59e0b,#f97316)"
+                        : "linear-gradient(90deg,#ef4444,#f97316)",
+                    color: "white",
+                    minWidth: 64,
+                    textAlign: "center",
+                  }}
+                  title={`Match: ${Math.round(matchPercent)}%`}
+                >
+                  {Math.round(matchPercent)}%
                 </div>
-              )}
-              <div className="text-xs text-gray-500 mt-1">{job?.type}</div>
-            </div>
-          </div>
-
-          {job?.tags && job.tags.length > 0 && (
-            <div className="mt-3 flex flex-wrap gap-2">
-              {job.tags.map((t) => (
-                <span key={t} className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded-full">
-                  {t}
-                </span>
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
-
-      <div className="mt-4 flex items-center justify-between gap-4">
-        <div className="flex items-center gap-2">
-          <Link
-            to={`/jobs/${job?.id}`}
-            className="inline-flex items-center gap-2 px-4 py-2 text-sm bg-blue-50 text-blue-700 rounded-md hover:bg-blue-100"
-          >
-            View
-          </Link>
-
-          <button
-            onClick={handleApply}
-            className="inline-flex items-center gap-2 px-4 py-2 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700"
-          >
-            Apply
-          </button>
-        </div>
-
-        <div className="flex items-center gap-3">
-          <button
-            onClick={handleSave}
-            aria-pressed={saved}
-            className={`p-2 rounded-md transition ${saved ? "bg-yellow-100 text-yellow-600" : "text-gray-500 hover:bg-gray-50"}`}
-            title={saved ? "Saved" : "Save job"}
-          >
-            {saved ? (
-              <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                <path d="M5 3c-.552 0-1 .448-1 1v16l7-3 7 3V4c0-.552-.448-1-1-1H5z" />
-              </svg>
-            ) : (
-              <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M5 3c-.552 0-1 .448-1 1v16l7-3 7 3V4c0-.552-.448-1-1-1H5z" />
-              </svg>
+              </div>
             )}
-          </button>
-
-          <span className="text-xs text-gray-400">
-            {job?.postedAt ? `${Math.max(1, Math.floor((Date.now()/1000 - job.postedAt) / 86400))}d ago` : ""}
-          </span>
+          </div>
         </div>
       </div>
-    </article>
+
+      <div className="mt-4 flex items-center justify-between text-sm text-gray-600">
+        <div className="flex items-center gap-2">
+          <span className="inline-block px-2 py-1 text-xs bg-gray-50 border rounded text-gray-700">
+            {job.type || "Full-time"}
+          </span>
+          <span className="text-xs text-gray-400">{job.location || "Remote"}</span>
+        </div>
+
+        <div className="text-sm font-medium text-gray-900">{job.salary || "—"}</div>
+      </div>
+
+      <div className="mt-4 flex flex-wrap gap-2">
+        {(job.tags || []).slice(0, 4).map((t) => (
+          <span key={t} className="text-xs px-2 py-1 rounded-full bg-gray-50 border text-gray-600">
+            {t}
+          </span>
+        ))}
+      </div>
+
+      <div className="mt-4 flex items-center justify-between">
+        <Link
+          to={`/jobs/${job.id}`}
+          className="text-sm text-blue-600 hover:underline"
+          aria-label={`View ${job.title} at ${job.company}`}
+        >
+          View
+        </Link>
+        <div className="text-xs text-gray-400">
+          {formatDate(job.postedAt)}
+        </div>
+      </div>
+    </div>
   );
+}
+
+function formatDate(epochOrIso) {
+  if (!epochOrIso) return "";
+  const d = typeof epochOrIso === "number" ? new Date(epochOrIso * 1000) : new Date(epochOrIso);
+  return d.toLocaleDateString(undefined, { month: "short", day: "numeric" });
 }
